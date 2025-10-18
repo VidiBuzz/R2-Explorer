@@ -36,12 +36,23 @@
 
       <q-card-section class="q-pt-none">
         <div class="text-caption text-grey-7">
-          <p>A powerful cloud storage management interface built with Vue.js and Quasar.</p>
+          <p>A powerful cloud storage management interface.</p>
+
+          <p class="text-weight-medium q-mt-md q-mb-xs">Built with:</p>
+          <ul class="q-pl-md q-mb-md">
+            <li>Vue.js 3.4</li>
+            <li>Quasar 2.18.5</li>
+            <li>Vite 2.9.18</li>
+            <li>Pinia (State Management)</li>
+            <li>Cloudflare Workers + R2</li>
+          </ul>
+
+          <p class="text-weight-medium q-mb-xs">Features:</p>
           <ul class="q-pl-md">
             <li>Multi-file uploads with progress tracking</li>
             <li>Upload cancellation</li>
-            <li>Multipart upload support for large files</li>
-            <li>Cloudflare R2 integration</li>
+            <li>Multipart upload support (95MB chunks)</li>
+            <li>Drag-and-drop file management</li>
           </ul>
         </div>
       </q-card-section>
