@@ -169,6 +169,9 @@ export default {
 					const chunkSize = 95 * 1024 * 1024;
 					// Files bigger than 100MB require multipart upload
 
+				// Create AbortController for this upload
+				const controller = new AbortController();
+				this.mainStore.setUploadController(file.name, controller);
 					try {
 						if (file.size > chunkSize) {
 							const { uploadId } = (
@@ -204,6 +207,7 @@ export default {
 											totalParts: totalParts
 										});
 									},
+								controller.signal,
 								);
 
 								parts.push(data);
@@ -232,9 +236,15 @@ export default {
 										progress: progressEvent.loaded * 100 / file.size
 									});
 								},
+						controller.signal,
 							);
 						}
 					} catch (e) {
+					// Handle cancelled uploads
+					if (e.name === 'AbortError' || e.name === 'CanceledError') {
+						this.mainStore.removeUploadingFile(file.name);
+						continue;
+					}
 						console.error(`Unable to upload file ${file.name}: ${e.message}`);
 					}
 
