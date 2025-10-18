@@ -5,18 +5,54 @@
     <q-avatar>
       <img src="/logo-white.svg">
     </q-avatar>
-    R2-Explorer
+    Candid Cloud SmartChannel
   </q-toolbar-title>
   <q-space />
   <div v-if="mainStore.buckets.length > 1">
     <bucket-picker/>
   </div>
+
+  <q-btn flat dense round icon="info" @click="showAbout = true">
+    <q-tooltip>About</q-tooltip>
+  </q-btn>
+
+  <q-dialog v-model="showAbout">
+    <q-card style="min-width: 350px">
+      <q-card-section class="row items-center q-pb-none">
+        <div class="text-h6">About</div>
+        <q-space />
+        <q-btn icon="close" flat round dense v-close-popup />
+      </q-card-section>
+
+      <q-card-section>
+        <div class="text-center">
+          <q-avatar size="80px">
+            <img src="/logo-white.svg">
+          </q-avatar>
+          <h5 class="q-mt-md q-mb-xs">Candid Cloud SmartChannel</h5>
+          <p class="text-grey-7 q-mb-none">Version 1.2</p>
+        </div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none">
+        <div class="text-caption text-grey-7">
+          <p>A powerful cloud storage management interface built with Vue.js and Quasar.</p>
+          <ul class="q-pl-md">
+            <li>Multi-file uploads with progress tracking</li>
+            <li>Upload cancellation</li>
+            <li>Multipart upload support for large files</li>
+            <li>Cloudflare R2 integration</li>
+          </ul>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script>
 import BucketPicker from "components/main/BucketPicker.vue";
 import { useMainStore } from "stores/main-store";
-import { defineComponent } from "vue";
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
 	name: "TopBar",
@@ -24,7 +60,8 @@ export default defineComponent({
 	components: { BucketPicker },
 	setup() {
 		const mainStore = useMainStore();
-		return { mainStore };
+		const showAbout = ref(false);
+		return { mainStore, showAbout };
 	},
 });
 </script>
