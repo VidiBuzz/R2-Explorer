@@ -83,12 +83,15 @@ export const useMainStore = defineStore("main", {
 
 			return false;
 		},
-		addUploadingFiles(filenames) {
-			filenames.forEach((filename) => {
+		addUploadingFiles(files) {
+			files.forEach((file) => {
+				const filename = file.name || file;
+				const fileSize = file.size || 0;
 				this.uploadingFiles[filename] = {
 					progress: 0,
 					totalParts: 0,
 					completedParts: 0,
+					fileSize: fileSize,
 				};
 			});
 		},

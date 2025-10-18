@@ -111,7 +111,7 @@ export default {
 		async uploadFiles(folders) {
 			let totalFiles = 0;
 			let totalSize = 0;
-			const filenames = [];
+			const allFiles = [];
 
 			// Create folders and count files
 			for (const [folder, files] of Object.entries(folders)) {
@@ -128,18 +128,18 @@ export default {
 				totalFiles += files.length;
 
 				for (const file of files) {
-					filenames.push(file.name);
+					allFiles.push(file);
 					totalSize += file.size;
 				}
 			}
 
 			this.$bus.emit("fetchFiles");
-			this.mainStore.addUploadingFiles(filenames);
+			this.mainStore.addUploadingFiles(allFiles);
 
 			const notif = this.q.notify({
 				group: false,
 				spinner: true,
-				message: `Uploading files 1/${filenames.length}...`,
+				message: `Uploading files 1/${allFiles.length}...`,
 				caption: "0%",
 				timeout: 0,
 			});
@@ -149,8 +149,8 @@ export default {
 			let uploadSize = 0;
 			for (const [folder, files] of Object.entries(folders)) {
 				notif({
-					message: `Uploading files ${uploadCount + 1}/${filenames.length}...`,
-					caption: `${Number.parseInt(((uploadCount + 1) * 100) / filenames.length)}%`, // +1 because still needs to delete the folder
+					message: `Uploading files ${uploadCount + 1}/${allFiles.length}...`,
+					caption: `${Number.parseInt(((uploadCount + 1) * 100) / allFiles.length)}%`, // +1 because still needs to delete the folder
 				});
 
 				let targetFolder = this.selectedFolder + folder;
