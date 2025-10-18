@@ -92,6 +92,9 @@ export const useMainStore = defineStore("main", {
 					totalParts: 0,
 					completedParts: 0,
 					fileSize: fileSize,
+					startTime: Date.now(),
+					endTime: null,
+					duration: null,
 				};
 			});
 		},
@@ -116,6 +119,14 @@ export const useMainStore = defineStore("main", {
 		},
 		removeUploadingFile(filename) {
 			delete this.uploadingFiles[filename];
+		},
+		completeUpload(filename) {
+			if (this.uploadingFiles[filename]) {
+				this.uploadingFiles[filename].progress = 100;
+				this.uploadingFiles[filename].endTime = Date.now();
+				this.uploadingFiles[filename].duration =
+					this.uploadingFiles[filename].endTime - this.uploadingFiles[filename].startTime;
+			}
 		},
 	},
 });

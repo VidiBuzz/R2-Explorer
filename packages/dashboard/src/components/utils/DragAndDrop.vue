@@ -238,6 +238,9 @@ export default {
 						console.error(`Unable to upload file ${file.name}: ${e.message}`);
 					}
 
+					// Mark upload as complete and calculate duration
+					this.mainStore.completeUpload(file.name);
+
 					uploadSize += file.size;
 
 					await sleep(200);

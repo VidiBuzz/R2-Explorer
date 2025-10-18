@@ -16,6 +16,9 @@
             <td class="progress-cell">
               <div v-if="data.progress === 100" class="upload-complete">
                 <i class="bi bi-check-circle-fill"></i> Complete
+                <span v-if="data.duration" class="upload-duration">
+                  ({{ formatDuration(data.duration) }})
+                </span>
               </div>
               <div v-else>
                 <div class="progress-info">
@@ -57,6 +60,19 @@ export default {
 			const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
 			const i = Math.floor(Math.log(bytes) / Math.log(k));
 			return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+		},
+		formatDuration(ms) {
+			const seconds = Math.floor(ms / 1000);
+			const minutes = Math.floor(seconds / 60);
+			const hours = Math.floor(minutes / 60);
+
+			if (hours > 0) {
+				return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+			} else if (minutes > 0) {
+				return `${minutes}m ${seconds % 60}s`;
+			} else {
+				return `${seconds}s`;
+			}
 		}
 	},
 };
@@ -146,6 +162,14 @@ export default {
     text-align: center;
     color: #28a745;
     font-weight: 500;
+  }
+
+  .upload-duration {
+    display: block;
+    font-size: 0.85em;
+    color: #6c757d;
+    font-weight: normal;
+    margin-top: 2px;
   }
 }
 </style>
