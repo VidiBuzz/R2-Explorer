@@ -15,6 +15,11 @@ export const useMainStore = defineStore("main", {
 
 		// Upload tracking
 		uploadingFiles: {},
+		uploadControllers: {},
+
+		// Download tracking
+		downloadingFiles: {},
+		downloadControllers: {},
 	}),
 	getters: {
 		serverUrl() {
@@ -127,6 +132,52 @@ export const useMainStore = defineStore("main", {
 				this.uploadingFiles[filename].duration =
 					this.uploadingFiles[filename].endTime - this.uploadingFiles[filename].startTime;
 			}
+		},
+		setUploadController(filename, controller) {
+			this.uploadControllers[filename] = controller;
+		},
+		cancelUpload(filename) {
+			if (this.uploadControllers[filename]) {
+				this.uploadControllers[filename].abort();
+				delete this.uploadControllers[filename];
+			}
+			this.removeUploadingFile(filename);
+		},
+		cancelAllUploads() {
+			Object.keys(this.uploadingFiles).forEach(filename => {
+				if (this.uploadingFiles[filename].progress < 100) {
+					this.cancelUpload(filename);
+				}
+			});
+		},
+		// Download tracking actions
+		addDownloadingFile(filename, fileSize) {
+			this.downloadingFiles[filename] = {
+				progress: 0,
+				fileSize: fileSize,
+				startTime: Date.now(),
+				endTime: null,
+				duration: null,
+			};
+		},
+		setDownloadProgress({ filename, progress }) {
+			if (this.downloadingFiles[filename]) {
+				this.downloadingFiles[filename].progress = progress;
+			}
+		},
+		completeDownload(filename) {
+			if (this.downloadingFiles[filename]) {
+				this.downloadingFiles[filename].progress = 100;
+				this.downloadingFiles[filename].endTime = Date.now();
+				this.downloadingFiles[filename].duration =
+					this.downloadingFiles[filename].endTime - this.downloadingFiles[filename].startTime;
+			}
+		},
+		removeDownloadingFile(filename) {
+			delete this.downloadingFiles[filename];
+		},
+		clearDownloadingFiles() {
+			this.downloadingFiles = {};
 		},
 	},
 });

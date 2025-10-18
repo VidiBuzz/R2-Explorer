@@ -1,15 +1,14 @@
 <template>
-  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0" class="uploading-popup">
+  <div v-if="Object.keys(mainStore.downloadingFiles).length > 0" class="downloading-popup">
     <div class="card">
       <div class="card-header d-flex flex-row">
-        Uploading {{ Object.keys(mainStore.uploadingFiles).length }} files
-        <button class="btn btn-warning btn-xs ms-2" @click="cancelAll" v-if="hasActiveUploads">Cancel All</button>
+        Downloading {{ Object.keys(mainStore.downloadingFiles).length }} files
         <button class="btn btn-primary btn-xs btn-close" @click="close"></button>
       </div>
       <div class="card-body">
-        <table class="upload-table">
+        <table class="download-table">
           <tbody>
-          <tr class="table-active" v-for="(data, filename) in mainStore.uploadingFiles" :key="filename">
+          <tr class="table-active" v-for="(data, filename) in mainStore.downloadingFiles" :key="filename">
             <td class="progress-filename">
               <div class="filename-text">{{ filename }}</div>
               <div class="file-size-text" v-if="data.fileSize">{{ formatFileSize(data.fileSize) }}</div>
@@ -35,11 +34,6 @@
                 </div>
               </div>
             </td>
-            <td class="cancel-cell" v-if="data.progress < 100">
-              <button class="btn btn-danger btn-xs" @click="cancelUpload(filename)">
-                <i class="bi bi-x-circle"></i>
-              </button>
-            </td>
           </tr>
           </tbody>
         </table>
@@ -56,20 +50,9 @@ export default {
 		const mainStore = useMainStore();
 		return { mainStore };
 	},
-	computed: {
-		hasActiveUploads() {
-			return Object.values(this.mainStore.uploadingFiles).some(file => file.progress < 100);
-		}
-	},
 	methods: {
 		close: function () {
-			this.mainStore.clearUploadingFiles();
-		},
-		cancelUpload(filename) {
-			this.mainStore.cancelUpload(filename);
-		},
-		cancelAll() {
-			this.mainStore.cancelAllUploads();
+			this.mainStore.clearDownloadingFiles();
 		},
 		formatFileSize(bytes) {
 			if (bytes === 0) return '0 Bytes';
@@ -96,10 +79,10 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.uploading-popup {
+.downloading-popup {
   position: fixed;
   bottom: 0;
-  right: 1em;
+  left: 1em;
   // width: 25vw;
   z-index: 10;
 
@@ -115,11 +98,11 @@ export default {
   }
 
   .card-header {
-    background-color: #38414A;
+    background-color: #1E6E9C;
     color: #fff;
   }
 
-  .upload-table {
+  .download-table {
     width: 100%;
     margin: 0;
   }
@@ -150,12 +133,6 @@ export default {
   .progress-cell {
     padding: 8px;
     min-width: 180px;
-  }
-
-  .cancel-cell {
-    padding: 8px;
-    text-align: center;
-    width: 50px;
   }
 
   .progress-info {

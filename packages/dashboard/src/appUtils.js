@@ -205,7 +205,7 @@ export const apiHandler = {
 			parts,
 		});
 	},
-	multipartUpload: (uploadId, partNumber, bucket, key, chunk, callback) => {
+	multipartUpload: (uploadId, partNumber, bucket, key, chunk, callback, signal) => {
 		return api.post(`/buckets/${bucket}/multipart/upload`, chunk, {
 			params: {
 				key: encode(key),
@@ -213,12 +213,13 @@ export const apiHandler = {
 				partNumber,
 			},
 			onUploadProgress: callback,
+			signal: signal,
 			headers: {
 				"Content-Type": "multipart/form-data",
 			},
 		});
 	},
-	uploadObjects: async (file, key, bucket, callback) => {
+	uploadObjects: async (file, key, bucket, callback, signal) => {
 		return await retryWithBackoff(
 			async () => {
 				return await api.post(`/buckets/${bucket}/upload`, file, {
@@ -234,6 +235,7 @@ export const apiHandler = {
 						"Content-Type": "multipart/form-data",
 					},
 					onUploadProgress: callback,
+					signal: signal,
 				});
 			},
 			5,
