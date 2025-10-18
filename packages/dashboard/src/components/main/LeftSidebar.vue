@@ -46,42 +46,6 @@
       <q-btn class="q-mb-sm" @click="gotoFiles" color="blue" icon="folder_copy" label="Files" stack />
       <q-btn v-if="mainStore.config && mainStore.config.emailRouting !== false" class="q-mb-sm" @click="gotoEmail" color="blue" icon="email" label="Email" stack />
 
-      <q-btn class="q-mb-sm q-mt-auto q-mb-0" @click="infoPopup=true" color="secondary" icon="question_mark"
-             label="Info"
-             stack />
-    </div>
-  </div>
-
-  <q-dialog v-model="infoPopup" persistent no-route-dismiss>
-    <q-card>
-      <q-card-section>
-        <div class="text-h6">🎉 Thank you for using R2-Explorer! 🚀</div>
-      </q-card-section>
-
-      <q-card-section class="q-pt-none">
-        You are running version <b>{{ mainStore.version }}</b><br>
-        <template v-if="updateAvailable">
-          Latest version is <b>{{latestVersion}}</b>, learn how to <a href="https://r2explorer.com/getting-started/updating-your-project/" target="_blank">update your instance here</a>.<br>
-        </template>
-        <br>
-        <template v-if="mainStore.auth">
-          <b>Authentication</b><br>
-          Method: {{ mainStore.auth.type }}<br>
-          Username: {{ mainStore.auth.username }}
-        </template>
-        <template v-else>
-          Not authenticated
-        </template>
-        <br><br>
-        <b>Server Configuration</b><br>
-        {{ JSON.stringify(mainStore.config, null, 2) }}
-      </q-card-section>
-
-      <q-card-actions align="right">
-        <q-btn flat label="OK" color="primary" v-close-popup />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
 
   <create-folder ref="createFolder" />
   <create-file ref="createFile" />
@@ -95,10 +59,6 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
 	name: "LeftSidebar",
-	data: () => ({
-		infoPopup: false,
-		updateAvailable: false,
-		latestVersion: "",
 	}),
 	components: { CreateFolder, CreateFile },
 	methods: {
@@ -144,24 +104,6 @@ export default defineComponent({
 	async mounted() {
 		const resp = await fetch(
 			"https://api.github.com/repos/G4brym/R2-Explorer/releases/latest",
-		);
-		if (!resp.ok) {
-			console.log("Unable to retrieve latest r2-explorer updates :(");
-			console.log(
-				"Manually check them here: https://github.com/G4brym/R2-Explorer/releases",
-			);
-		} else {
-			const parsed = await resp.json();
-			const latestVersion = parsed.tag_name.replace("v", "");
-			if (this.isUpdateAvailable(this.mainStore.version, latestVersion)) {
-				this.latestVersion = latestVersion;
-				this.updateAvailable = true;
-			}
-		}
-	},
-	setup() {
-		const mainStore = useMainStore();
-
 		return {
 			mainStore,
 		};
