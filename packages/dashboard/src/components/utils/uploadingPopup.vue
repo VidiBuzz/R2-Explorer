@@ -1,14 +1,14 @@
 <template>
-  <div v-if="Object.keys($store.state.uploadingFiles).length > 0" class="uploading-popup">
+  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0" class="uploading-popup">
     <div class="card">
       <div class="card-header d-flex flex-row">
-        Uploading {{ Object.keys($store.state.uploadingFiles).length }} files
+        Uploading {{ Object.keys(mainStore.uploadingFiles).length }} files
         <button class="btn btn-primary btn-xs btn-close" @click="close"></button>
       </div>
       <div class="card-body">
         <table>
           <tbody>
-          <tr class="table-active" v-for="(data, filename) in $store.state.uploadingFiles" :key="filename">
+          <tr class="table-active" v-for="(data, filename) in mainStore.uploadingFiles" :key="filename">
             <td class="progress-filename">{{ filename }}</td>
             <td style="width: 100px">
               <div v-if="data.progress === 100" class="upload-complete">
@@ -29,10 +29,16 @@
 </template>
 
 <script>
+import { useMainStore } from "stores/main-store";
+
 export default {
+	setup() {
+		const mainStore = useMainStore();
+		return { mainStore };
+	},
 	methods: {
 		close: function () {
-			this.$store.dispatch("clearUploadingFiles");
+			this.mainStore.clearUploadingFiles();
 		},
 	},
 };

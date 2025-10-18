@@ -134,7 +134,7 @@ export default {
 			}
 
 			this.$bus.emit("fetchFiles");
-			// self.$store.dispatch('addUploadingFiles', filenames)  // TODO!
+			this.mainStore.addUploadingFiles(filenames);
 
 			const notif = this.q.notify({
 				group: false,
@@ -177,6 +177,7 @@ export default {
 
 							let partNumber = 1;
 							const parts = [];
+							const totalParts = Math.ceil(file.size / chunkSize);
 							// console.log('total: ', file.size)
 							// console.log('chunk: ', chunkSize)
 
@@ -196,10 +197,12 @@ export default {
 										notif({
 											caption: `${Number.parseInt(((uploadSize + start + progressEvent.loaded) * 100) / totalSize)}%`,
 										});
-										// self.$store.dispatch('setUploadProgress', {
-										//   filename: file.name,
-										//   progress: (start + progressEvent.loaded) * 100 / file.size
-										// })  // TODO
+										this.mainStore.setUploadProgress({
+											filename: file.name,
+											progress: (start + progressEvent.loaded) * 100 / file.size,
+											partNumber: partNumber,
+											totalParts: totalParts
+										});
 									},
 								);
 
@@ -224,10 +227,10 @@ export default {
 									notif({
 										caption: `${Number.parseInt(((uploadSize + progressEvent.loaded) * 100) / totalSize)}%`,
 									});
-									// self.$store.dispatch('setUploadProgress', {
-									//   filename: file.name,
-									//   progress: progressEvent.loaded * 100 / file.size
-									// })  // TODO
+									this.mainStore.setUploadProgress({
+										filename: file.name,
+										progress: progressEvent.loaded * 100 / file.size
+									});
 								},
 							);
 						}

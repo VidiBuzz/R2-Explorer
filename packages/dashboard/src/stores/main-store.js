@@ -12,6 +12,9 @@ export const useMainStore = defineStore("main", {
 
 		// Frontend data
 		buckets: [],
+
+		// Upload tracking
+		uploadingFiles: {},
 	}),
 	getters: {
 		serverUrl() {
@@ -79,6 +82,37 @@ export const useMainStore = defineStore("main", {
 			}
 
 			return false;
+		},
+		addUploadingFiles(filenames) {
+			filenames.forEach((filename) => {
+				this.uploadingFiles[filename] = {
+					progress: 0,
+					totalParts: 0,
+					completedParts: 0,
+				};
+			});
+		},
+		setUploadProgress({ filename, progress, partNumber, totalParts }) {
+			if (this.uploadingFiles[filename]) {
+				// Update progress percentage
+				this.uploadingFiles[filename].progress = progress;
+
+				// Track multipart upload progress if provided
+				if (partNumber !== undefined && totalParts !== undefined) {
+					this.uploadingFiles[filename].completedParts = partNumber;
+					this.uploadingFiles[filename].totalParts = totalParts;
+					// Calculate accurate progress based on parts completed
+					this.uploadingFiles[filename].progress = Math.round(
+						(partNumber / totalParts) * 100
+					);
+				}
+			}
+		},
+		clearUploadingFiles() {
+			this.uploadingFiles = {};
+		},
+		removeUploadingFile(filename) {
+			delete this.uploadingFiles[filename];
 		},
 	},
 });
