@@ -103,36 +103,34 @@ export const useMainStore = defineStore("main", {
 				};
 			});
 		},
-		setUploadProgress({ filename, progress, partNumber, totalParts }) {
-			if (this.uploadingFiles[filename]) {
-				// Update progress percentage
-				this.uploadingFiles[filename].progress = progress;
-
-				// Track multipart upload progress if provided
-				if (partNumber !== undefined && totalParts !== undefined) {
-					this.uploadingFiles[filename].completedParts = partNumber;
-					this.uploadingFiles[filename].totalParts = totalParts;
-					// Calculate accurate progress based on parts completed
-					this.uploadingFiles[filename].progress = Math.round(
-						(partNumber / totalParts) * 100
-					);
-				}
-			}
-		},
-		clearUploadingFiles() {
-			this.uploadingFiles = {};
-		},
-		removeUploadingFile(filename) {
-			delete this.uploadingFiles[filename];
-		},
-		completeUpload(filename) {
-			if (this.uploadingFiles[filename]) {
-				this.uploadingFiles[filename].progress = 100;
-				this.uploadingFiles[filename].endTime = Date.now();
-				this.uploadingFiles[filename].duration =
-					this.uploadingFiles[filename].endTime - this.uploadingFiles[filename].startTime;
-			}
-		},
+	setUploadProgress({ filename, progress, partNumber, totalParts }) {
+		if (this.uploadingFiles[filename]) {
+			// Create new object to trigger Vue reactivity
+			this.uploadingFiles[filename] = {
+				...this.uploadingFiles[filename],
+				progress: progress,
+				completedParts: partNumber !== undefined ? partNumber : this.uploadingFiles[filename].completedParts,
+				totalParts: totalParts !== undefined ? totalParts : this.uploadingFiles[filename].totalParts,
+			};
+		}
+	},
+	clearUploadingFiles() {
+		this.uploadingFiles = {};
+	},
+	removeUploadingFile(filename) {
+		delete this.uploadingFiles[filename];
+	},
+	completeUpload(filename) {
+		if (this.uploadingFiles[filename]) {
+			const endTime = Date.now();
+			this.uploadingFiles[filename] = {
+				...this.uploadingFiles[filename],
+				progress: 100,
+				endTime: endTime,
+				duration: endTime - this.uploadingFiles[filename].startTime,
+			};
+		}
+	},
 		setUploadController(filename, controller) {
 			this.uploadControllers[filename] = controller;
 		},

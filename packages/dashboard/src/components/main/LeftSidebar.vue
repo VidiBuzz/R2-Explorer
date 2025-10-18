@@ -45,7 +45,8 @@
 
       <q-btn class="q-mb-sm" @click="gotoFiles" color="blue" icon="folder_copy" label="Files" stack />
       <q-btn v-if="mainStore.config && mainStore.config.emailRouting !== false" class="q-mb-sm" @click="gotoEmail" color="blue" icon="email" label="Email" stack />
-
+    </div>
+  </div>
 
   <create-folder ref="createFolder" />
   <create-file ref="createFile" />
@@ -59,7 +60,6 @@ import { defineComponent } from "vue";
 
 export default defineComponent({
 	name: "LeftSidebar",
-	}),
 	components: { CreateFolder, CreateFile },
 	methods: {
 		gotoEmail: function () {
@@ -74,24 +74,6 @@ export default defineComponent({
 				params: { bucket: this.selectedBucket },
 			});
 		},
-		isUpdateAvailable: (currentVersion, latestVersion) => {
-			// Split versions into parts and convert to numbers
-			const current = currentVersion.split(".").map(Number);
-			const latest = latestVersion.split(".").map(Number);
-
-			// Compare major version
-			if (latest[0] > current[0]) return true;
-			if (latest[0] < current[0]) return false;
-
-			// Compare minor version
-			if (latest[1] > current[1]) return true;
-			if (latest[1] < current[1]) return false;
-
-			// Compare patch version
-			if (latest[2] > current[2]) return true;
-
-			return false;
-		},
 	},
 	computed: {
 		selectedBucket: function () {
@@ -101,9 +83,8 @@ export default defineComponent({
 			return this.$route.name.split("-")[0];
 		},
 	},
-	async mounted() {
-		const resp = await fetch(
-			"https://api.github.com/repos/G4brym/R2-Explorer/releases/latest",
+	setup() {
+		const mainStore = useMainStore();
 		return {
 			mainStore,
 		};
