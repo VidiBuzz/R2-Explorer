@@ -40,6 +40,11 @@ export async function retryWithBackoff(
 		} catch (error) {
 			lastError = error instanceof Error ? error : new Error(String(error));
 
+			// Don't retry if upload was cancelled by user
+			if (error.name === 'AbortError' || error.name === 'CanceledError') {
+				throw lastError;
+			}
+
 			if (attempt === maxAttempts) {
 				throw lastError;
 			}
