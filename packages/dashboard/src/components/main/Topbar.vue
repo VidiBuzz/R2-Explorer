@@ -30,7 +30,7 @@
             <img src="/logo-white.svg">
           </q-avatar>
           <h5 class="q-mt-md q-mb-xs">Candid Cloud SmartChannel</h5>
-          <p class="text-grey-7 q-mb-none">Version 1.4</p>
+          <p class="text-grey-7 q-mb-none">Version 1.5</p>
         </div>
       </q-card-section>
 
