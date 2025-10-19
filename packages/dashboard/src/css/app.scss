@@ -1,4 +1,13 @@
 // app global css in SCSS form
+
+// Kumbh Sans for main titles and headers
+h1, h2, h3, h4, h5, h6,
+.q-toolbar-title,
+.q-breadcrumbs,
+.modern-breadcrumbs {
+  font-family: 'Kumbh Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
 .bg-green {
   background-color: #4CAE4F;
 }

@@ -32,6 +32,35 @@
         </div>
       </div>
 
+      <!-- FILE OPERATIONS TOOLBAR -->
+      <q-toolbar v-if="selected.length > 0" class="file-operations-toolbar">
+        <q-toolbar-title>
+          <span class="selection-count">{{ selected.length }} file(s) selected</span>
+        </q-toolbar-title>
+
+        <q-btn flat round dense icon="close" @click="clearSelection">
+          <q-tooltip>Clear Selection</q-tooltip>
+        </q-btn>
+
+        <q-separator vertical inset spaced />
+
+        <q-btn flat icon="delete" label="Delete" @click="deleteSelected" color="negative">
+          <q-tooltip>Delete selected files</q-tooltip>
+        </q-btn>
+
+        <q-btn flat icon="drive_file_move" label="Move" @click="moveSelected">
+          <q-tooltip>Move to another folder</q-tooltip>
+        </q-btn>
+
+        <q-btn flat icon="content_copy" label="Copy" @click="copySelected">
+          <q-tooltip>Copy selected files</q-tooltip>
+        </q-btn>
+
+        <q-btn flat icon="download" label="Download" @click="downloadSelected">
+          <q-tooltip>Download selected files</q-tooltip>
+        </q-btn>
+      </q-toolbar>
+
       <drag-and-drop ref="uploader">
 
         <!-- GRID VIEW -->
@@ -47,7 +76,7 @@
 
           <div v-else class="grid-container">
             <div
-              v-for="row in rows"
+              v-for="row in paginatedRows"
               :key="row.name"
               class="file-card"
               @dblclick="openObject(row)"
@@ -83,6 +112,29 @@
               </q-btn>
             </div>
           </div>
+
+          <!-- GRID PAGINATION -->
+          <div v-if="rows.length > gridItemsPerPage" class="grid-pagination">
+            <q-btn
+              flat
+              round
+              dense
+              icon="chevron_left"
+              :disable="gridPage === 1"
+              @click="gridPage--"
+            />
+            <span class="pagination-info">
+              Page {{ gridPage }} of {{ gridMaxPage }} ({{ rows.length }} total files)
+            </span>
+            <q-btn
+              flat
+              round
+              dense
+              icon="chevron_right"
+              :disable="gridPage === gridMaxPage"
+              @click="gridPage++"
+            />
+          </div>
         </div>
 
         <!-- TABLE VIEW -->
@@ -101,7 +153,7 @@
           selection="multiple"
           v-model:selected="selected"
           @row-dblclick="openRowClick"
-          @row-click="openRowDlbClick"
+          @row-click="handleRowClick"
         >
 
           <template v-slot:loading>
@@ -151,6 +203,32 @@
           </template>
         </q-table>
 
+        <!-- STATUS BAR (Windows Explorer Style) -->
+        <div class="status-bar">
+          <div class="status-left">
+            <span v-if="selected.length > 0" class="status-item selected-info">
+              <q-icon name="check_circle" size="xs" />
+              {{ selected.length }} item(s) selected
+              <span v-if="selectedSize" class="size-info">({{ selectedSize }})</span>
+            </span>
+            <span v-else class="status-item">
+              <q-icon name="folder" size="xs" />
+              {{ totalFolders }} folder(s)
+            </span>
+            <q-separator vertical inset />
+            <span class="status-item">
+              <q-icon name="insert_drive_file" size="xs" />
+              {{ totalFiles }} file(s)
+            </span>
+          </div>
+          <div class="status-right">
+            <span class="status-item total-size">
+              <q-icon name="storage" size="xs" />
+              Total: {{ totalSize }}
+            </span>
+          </div>
+        </div>
+
       </drag-and-drop>
 
     </div>
@@ -178,6 +256,9 @@ export default defineComponent({
 		viewMode: 'grid',
 		rows: [],
 		selected: [],
+		lastSelectedIndex: -1,  // Track last selected index for shift+click range selection
+		gridPage: 1,  // Current page for grid view
+		gridItemsPerPage: 50,  // Items per page in grid view
 		columns: [
 			{
 				name: "name",
@@ -273,6 +354,33 @@ export default defineComponent({
 				},
 			];
 		},
+		paginatedRows: function () {
+			const start = (this.gridPage - 1) * this.gridItemsPerPage;
+			const end = start + this.gridItemsPerPage;
+			return this.rows.slice(start, end);
+		},
+		gridMaxPage: function () {
+			return Math.ceil(this.rows.length / this.gridItemsPerPage);
+		},
+		totalFiles: function () {
+			return this.rows.filter(r => r.type !== 'folder').length;
+		},
+		totalFolders: function () {
+			return this.rows.filter(r => r.type === 'folder').length;
+		},
+		totalSize: function () {
+			const bytes = this.rows
+				.filter(r => r.type !== 'folder')
+				.reduce((sum, file) => sum + (file.sizeRaw || 0), 0);
+			return this.formatBytes(bytes);
+		},
+		selectedSize: function () {
+			if (this.selected.length === 0) return '';
+			const bytes = this.selected
+				.filter(r => r.type !== 'folder')
+				.reduce((sum, file) => sum + (file.sizeRaw || 0), 0);
+			return this.formatBytes(bytes);
+		},
 	},
 	watch: {
 		selectedBucket(newVal) {
@@ -287,8 +395,30 @@ export default defineComponent({
 			evt.preventDefault();
 			this.openObject(row);
 		},
-		openRowDlbClick: function (evt, row, index) {
+		handleRowClick: function (evt, row, index) {
 			evt.preventDefault();
+
+			// If shift key is held and we have a previous selection
+			if (evt.shiftKey && this.lastSelectedIndex !== -1) {
+				const start = Math.min(this.lastSelectedIndex, index);
+				const end = Math.max(this.lastSelectedIndex, index);
+
+				// Select all rows between last clicked and current
+				const rangeSelection = this.rows.slice(start, end + 1);
+
+				// Merge with existing selections (remove duplicates)
+				const selectedNames = new Set(this.selected.map(s => s.name));
+				rangeSelection.forEach(row => {
+					if (!selectedNames.has(row.name)) {
+						this.selected.push(row);
+					}
+				});
+			} else {
+				// Normal click - update last selected index
+				this.lastSelectedIndex = index;
+			}
+
+			// Still emit the detail event for single click
 			this.$bus.emit("openFileDetails", row);
 		},
 		breadcrumbsClick: function (obj) {
@@ -330,8 +460,85 @@ export default defineComponent({
 				this.$refs.preview.openFile(row);
 			}
 		},
+		clearSelection: function () {
+			this.selected = [];
+			this.lastSelectedIndex = -1;
+		},
+		deleteSelected: function () {
+			this.q.dialog({
+				title: 'Confirm Delete',
+				message: `Are you sure you want to delete ${this.selected.length} file(s)?`,
+				cancel: true,
+				persistent: true
+			}).onOk(async () => {
+				// Store selected file names before deletion
+				const filesToDelete = [...this.selected];
+
+				// Immediately remove from view for instant feedback
+				filesToDelete.forEach(file => {
+					const index = this.rows.findIndex(r => r.name === file.name);
+					if (index !== -1) {
+						this.rows.splice(index, 1);
+					}
+				});
+
+				this.clearSelection();
+
+				// Delete files in background
+				for (const file of filesToDelete) {
+					try {
+						await this.$refs.options.deleteObject(file);
+					} catch (e) {
+						console.error(`Failed to delete ${file.name}:`, e);
+					}
+				}
+
+				// Refresh to ensure consistency
+				await this.fetchFiles();
+
+				this.q.notify({
+					type: 'positive',
+					message: 'Files deleted successfully',
+					timeout: 2000
+				});
+			});
+		},
+		moveSelected: function () {
+			this.q.notify({
+				type: 'info',
+				message: 'Move functionality coming soon',
+				timeout: 2000
+			});
+		},
+		copySelected: function () {
+			this.q.notify({
+				type: 'info',
+				message: 'Copy functionality coming soon',
+				timeout: 2000
+			});
+		},
+		downloadSelected: function () {
+			this.selected.forEach(file => {
+				if (file.type !== 'folder') {
+					window.open(`${this.mainStore.serverUrl}/api/buckets/${this.selectedBucket}/${file.key}`, '_blank');
+				}
+			});
+			this.q.notify({
+				type: 'positive',
+				message: `Downloading ${this.selected.length} file(s)`,
+				timeout: 2000
+			});
+		},
+		formatBytes: function (bytes) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+		},
 		fetchFiles: async function () {
 			this.loading = true;
+			this.gridPage = 1;  // Reset to page 1 when fetching new folder
 
 			this.rows = await apiHandler.fetchFile(
 				this.selectedBucket,
@@ -484,9 +691,9 @@ export default defineComponent({
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-  gap: 12px;
-  padding: 10px 0;
+  grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+  gap: 6px;
+  padding: 5px 0;
 }
 
 .file-card {
@@ -494,15 +701,15 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 12px 8px 10px;
+  padding: 6px 4px 5px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border-radius: 12px;
+  border-radius: 6px;
   border: 1px solid rgba(30, 60, 114, 0.15);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 130px;
+  min-height: 65px;
 
   // BEAUTIFUL CARD SHADOW
   box-shadow:
@@ -543,26 +750,26 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 50px;
-  height: 50px;
-  margin-bottom: 8px;
+  width: 25px;
+  height: 25px;
+  margin-bottom: 4px;
   background: linear-gradient(135deg, rgba(30, 60, 114, 0.1) 0%, rgba(42, 82, 152, 0.08) 100%);
-  border-radius: 10px;
+  border-radius: 5px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   // ICON SHADOW - THE KEY FEATURE
   box-shadow:
-    0 4px 12px rgba(30, 60, 114, 0.2),
-    0 2px 6px rgba(30, 60, 114, 0.12),
+    0 2px 6px rgba(30, 60, 114, 0.2),
+    0 1px 3px rgba(30, 60, 114, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .card-icon {
-  font-size: 28px !important;
+  font-size: 14px !important;
 
   // BEAUTIFUL ICON DROP SHADOW
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15))
-          drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.15))
+          drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
 .card-info {
@@ -571,22 +778,22 @@ export default defineComponent({
 }
 
 .card-name {
-  font-size: 0.75em;
+  font-size: 0.6em;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 4px;
-  line-height: 1.3;
+  padding: 0 2px;
+  line-height: 1.2;
 }
 
 .card-meta {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  font-size: 0.65em;
+  gap: 1px;
+  font-size: 0.5em;
   color: #718096;
   font-weight: 500;
 }
@@ -637,20 +844,54 @@ export default defineComponent({
   backdrop-filter: blur(10px);
 
   :deep(thead) {
-    // 3D GRADIENT HEADER
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    // TOP-TO-BOTTOM GRADIENT: darker edges, highlighted center
+    background: linear-gradient(180deg,
+      #909090 0%,              // 20% darker top
+      #c8c8c8 15%,             // Lighter
+      #e0e0e0 50%,             // Bright center highlight
+      #c8c8c8 85%,             // Lighter
+      #909090 100%             // 20% darker bottom
+    );
+    border: 1px solid #707070;
+    border-bottom: 3px solid #505050;
+
+    // ULTRA 3D DEPTH - REALLY POPPING OUT
     box-shadow:
-      0 4px 12px rgba(30, 60, 114, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      0 10px 30px rgba(0, 0, 0, 0.35),
+      0 6px 16px rgba(0, 0, 0, 0.25),
+      0 3px 8px rgba(0, 0, 0, 0.15),
+      inset 0 2px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+
+    // Extra pop with transform
+    transform: translateZ(20px);
 
     tr {
       th {
-        color: white;
-        font-weight: 700;
+        color: #1a1a1a;
+        font-weight: 800;
         font-size: 0.95em;
         letter-spacing: 0.5px;
         padding: 18px 20px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        text-shadow:
+          0 1px 1px rgba(255, 255, 255, 0.6),
+          0 -1px 1px rgba(0, 0, 0, 0.2);
+        vertical-align: middle;
+        line-height: 1;
+
+        // Fixed widths for column alignment
+        &:nth-child(1) { flex: 0 0 45%; min-width: 200px; } // Name
+        &:nth-child(2) { flex: 0 0 25%; min-width: 150px; } // Last Modified
+        &:nth-child(3) { flex: 0 0 20%; min-width: 100px; } // Size
+        &:nth-child(4) { flex: 0 0 10%; min-width: 60px; }  // Options
+
+        // STRONGER 3D RAISED EFFECT
+        background: linear-gradient(180deg,
+          rgba(255, 255, 255, 0.4) 0%,
+          rgba(255, 255, 255, 0.2) 30%,
+          rgba(0, 0, 0, 0.08) 70%,
+          rgba(0, 0, 0, 0.15) 100%
+        );
       }
     }
   }
@@ -672,6 +913,12 @@ export default defineComponent({
         padding: 16px 20px;
         border-bottom: 1px solid rgba(30, 60, 114, 0.08);
         backdrop-filter: blur(5px);
+
+        // Match header column widths for perfect alignment
+        &:nth-child(1) { flex: 0 0 45%; min-width: 200px; } // Name
+        &:nth-child(2) { flex: 0 0 25%; min-width: 150px; } // Last Modified
+        &:nth-child(3) { flex: 0 0 20%; min-width: 100px; } // Size
+        &:nth-child(4) { flex: 0 0 10%; min-width: 60px; }  // Options
       }
     }
   }
@@ -700,5 +947,126 @@ export default defineComponent({
   display: flex;
   width: 100%;
   justify-content: center;
+}
+
+// FILE OPERATIONS TOOLBAR
+.file-operations-toolbar {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  border-radius: 12px;
+  margin: 10px 0;
+  padding: 8px 16px;
+  box-shadow:
+    0 4px 16px rgba(30, 60, 114, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  .selection-count {
+    font-size: 0.95em;
+    font-weight: 600;
+  }
+
+  :deep(.q-btn) {
+    color: white;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+  }
+
+  :deep(.q-separator) {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+// GRID PAGINATION
+.grid-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(30, 60, 114, 0.15);
+
+  .pagination-info {
+    font-size: 0.9em;
+    font-weight: 600;
+    color: #2d3748;
+  }
+
+  :deep(.q-btn) {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    color: white;
+    transition: all 0.2s ease;
+
+    &:hover:not(.disabled) {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+    }
+
+    &.disabled {
+      opacity: 0.3;
+    }
+  }
+}
+
+// STATUS BAR (Windows Explorer Style)
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 16px;
+  margin-top: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 12px;
+  border: 1px solid rgba(30, 60, 114, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  font-size: 0.85em;
+  color: #2d3748;
+
+  .status-left,
+  .status-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+
+    .q-icon {
+      color: #1e3c72;
+      filter: drop-shadow(0 1px 2px rgba(30, 60, 114, 0.2));
+    }
+
+    &.selected-info {
+      color: #1e3c72;
+      font-weight: 600;
+
+      .size-info {
+        color: #2a5298;
+        font-weight: 500;
+      }
+    }
+
+    &.total-size {
+      font-weight: 600;
+      color: #2a5298;
+    }
+  }
+
+  :deep(.q-separator) {
+    height: 16px;
+    background: rgba(30, 60, 114, 0.2);
+  }
 }
 </style>

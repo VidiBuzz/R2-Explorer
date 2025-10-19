@@ -1,5 +1,21 @@
 <template>
-  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0" class="upload-panel-bottom">
+  <!-- MINIMIZED STATUS BAR -->
+  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0 && isMinimized" class="upload-status-minimized" @click="isMinimized = false">
+    <div class="minimized-content">
+      <i class="bi bi-cloud-upload"></i>
+      <span>{{ activeUploadsCount }} uploading • {{ completedCount }} completed</span>
+      <div class="minimized-progress">
+        <div class="mini-progress-bar" :style="{ width: overallProgress + '%' }"></div>
+      </div>
+      <span class="minimized-speed">{{ totalSpeed }} KB/s</span>
+    </div>
+    <button class="btn-close-mini" @click.stop="close">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <!-- FULL UPLOAD PANEL -->
+  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0 && !isMinimized" class="upload-panel-bottom">
     <div class="panel-header">
       <div class="header-left">
         <i class="bi bi-cloud-upload"></i>
@@ -9,8 +25,11 @@
         <button class="btn-cancel-all" @click="cancelAll" v-if="hasActiveUploads">
           <i class="bi bi-x-circle"></i> Cancel All
         </button>
-        <button class="btn-minimize" @click="close">
+        <button class="btn-minimize" @click="isMinimized = true">
           <i class="bi bi-chevron-down"></i>
+        </button>
+        <button class="btn-close" @click="close">
+          <i class="bi bi-x"></i>
         </button>
       </div>
     </div>
@@ -64,14 +83,37 @@ export default {
 		const mainStore = useMainStore();
 		return { mainStore };
 	},
+	data() {
+		return {
+			isMinimized: false
+		};
+	},
 	computed: {
 		hasActiveUploads() {
 			return Object.values(this.mainStore.uploadingFiles).some(file => file.progress < 100);
+		},
+		activeUploadsCount() {
+			return Object.values(this.mainStore.uploadingFiles).filter(file => file.progress < 100).length;
+		},
+		completedCount() {
+			return Object.values(this.mainStore.uploadingFiles).filter(file => file.progress === 100).length;
+		},
+		overallProgress() {
+			const files = Object.values(this.mainStore.uploadingFiles);
+			if (files.length === 0) return 0;
+			const total = files.reduce((sum, file) => sum + (file.progress || 0), 0);
+			return Math.round(total / files.length);
+		},
+		totalSpeed() {
+			const files = Object.values(this.mainStore.uploadingFiles);
+			const speed = files.reduce((sum, file) => sum + (file.speed || 0), 0);
+			return Math.round(speed);
 		}
 	},
 	methods: {
 		close: function () {
 			this.mainStore.clearUploadingFiles();
+			this.isMinimized = false;
 		},
 		cancelUpload(filename) {
 			this.mainStore.cancelUpload(filename);
@@ -208,15 +250,15 @@ export default {
   .upload-row {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 8px 12px;
-    margin-bottom: 6px;
+    gap: 8px;
+    padding: 4px 6px;
+    margin-bottom: 3px;
     background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
+    border-radius: 6px;
     border: 1px solid rgba(30, 60, 114, 0.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
-    min-height: 45px;
+    min-height: 22px;
 
     &:hover {
       transform: translateX(4px);
@@ -227,31 +269,31 @@ export default {
     .file-info {
       display: flex;
       align-items: center;
-      gap: 12px;
-      min-width: 300px;
+      gap: 6px;
+      min-width: 150px;
       flex-shrink: 0;
 
       i {
-        font-size: 2em;
+        font-size: 1em;
         color: #1e3c72;
-        filter: drop-shadow(0 2px 4px rgba(30, 60, 114, 0.3));
+        filter: drop-shadow(0 1px 2px rgba(30, 60, 114, 0.3));
       }
 
       .file-details {
         .filename {
           font-weight: 600;
           color: #2d3748;
-          font-size: 0.95em;
+          font-size: 0.75em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          max-width: 250px;
+          max-width: 125px;
         }
 
         .file-size {
-          font-size: 0.85em;
+          font-size: 0.7em;
           color: #718096;
-          margin-top: 2px;
+          margin-top: 1px;
         }
       }
     }
@@ -289,11 +331,11 @@ export default {
         }
 
         .progress-bar-wrapper {
-          height: 10px;
+          height: 5px;
           background: linear-gradient(90deg, #f0f0f0 0%, #e8e8e8 100%);
-          border-radius: 8px;
+          border-radius: 4px;
           overflow: hidden;
-          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+          box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
           position: relative;
 
           .progress-bar-fill {
@@ -363,34 +405,133 @@ export default {
       flex-shrink: 0;
 
       .btn-cancel {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        background: #ef4444;
         border: none;
-        border-radius: 6px;
-        width: 28px;
-        height: 28px;
+        border-radius: 4px;
+        width: 20px;
+        height: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 6px rgba(0, 242, 254, 0.25);
+        transition: all 0.2s ease;
+        box-shadow: 0 1px 3px rgba(239, 68, 68, 0.3);
 
         i {
           color: white;
-          font-size: 0.9em;
+          font-size: 0.65em;
           font-weight: bold;
         }
 
         &:hover {
-          transform: translateY(-2px) scale(1.08) rotate(90deg);
-          box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
+          transform: scale(1.1);
+          background: #dc2626;
+          box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
         }
 
         &:active {
-          transform: translateY(-1px) scale(1.03) rotate(90deg);
+          transform: scale(0.95);
         }
       }
     }
+  }
+}
+
+// MINIMIZED STATUS BAR
+.upload-status-minimized {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: rgba(30, 60, 114, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 8px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    background: rgba(42, 82, 152, 0.95);
+  }
+
+  .minimized-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    color: white;
+    font-size: 0.9em;
+    font-weight: 600;
+
+    i {
+      font-size: 1.2em;
+      filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.3));
+    }
+
+    .minimized-progress {
+      width: 200px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 3px;
+      overflow: hidden;
+
+      .mini-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+        transition: width 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+      }
+    }
+
+    .minimized-speed {
+      color: #4facfe;
+      font-weight: 700;
+    }
+  }
+
+  .btn-close-mini {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    border-radius: 4px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.1);
+    }
+  }
+}
+
+// CLOSE BUTTON (X) in header
+.btn-close {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9em;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 }
 </style>
