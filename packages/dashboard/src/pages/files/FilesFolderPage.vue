@@ -98,6 +98,8 @@
           column-sort-order="da"
           :flat="false"
           table-class="modern-file-table"
+          selection="multiple"
+          v-model:selected="selected"
           @row-dblclick="openRowClick"
           @row-click="openRowDlbClick"
         >
@@ -175,6 +177,7 @@ export default defineComponent({
 		loading: false,
 		viewMode: 'grid',
 		rows: [],
+		selected: [],
 		columns: [
 			{
 				name: "name",
@@ -481,8 +484,8 @@ export default defineComponent({
 
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 12px;
   padding: 10px 0;
 }
 
@@ -491,15 +494,15 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 16px 16px;
+  padding: 12px 8px 10px;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  border-radius: 20px;
+  border-radius: 12px;
   border: 1px solid rgba(30, 60, 114, 0.15);
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 200px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 130px;
 
   // BEAUTIFUL CARD SHADOW
   box-shadow:
@@ -540,26 +543,26 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 90px;
-  height: 90px;
-  margin-bottom: 16px;
+  width: 50px;
+  height: 50px;
+  margin-bottom: 8px;
   background: linear-gradient(135deg, rgba(30, 60, 114, 0.1) 0%, rgba(42, 82, 152, 0.08) 100%);
-  border-radius: 18px;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   // ICON SHADOW - THE KEY FEATURE
   box-shadow:
-    0 8px 25px rgba(30, 60, 114, 0.25),
-    0 4px 12px rgba(30, 60, 114, 0.15),
+    0 4px 12px rgba(30, 60, 114, 0.2),
+    0 2px 6px rgba(30, 60, 114, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.5);
 }
 
 .card-icon {
-  font-size: 48px !important;
+  font-size: 28px !important;
 
   // BEAUTIFUL ICON DROP SHADOW
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))
-          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15))
+          drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
 }
 
 .card-info {
@@ -568,22 +571,22 @@ export default defineComponent({
 }
 
 .card-name {
-  font-size: 0.95em;
+  font-size: 0.75em;
   font-weight: 600;
   color: #2d3748;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding: 0 8px;
-  line-height: 1.4;
+  padding: 0 4px;
+  line-height: 1.3;
 }
 
 .card-meta {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 0.8em;
+  gap: 2px;
+  font-size: 0.65em;
   color: #718096;
   font-weight: 500;
 }
