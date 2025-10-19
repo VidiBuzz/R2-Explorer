@@ -32,6 +32,10 @@
           <div v-else class="progress-container">
             <div class="progress-stats">
               <span class="percentage">{{ Math.round(data.progress || 0) }}%</span>
+              <span v-if="data.timeRemaining" class="time-speed">
+                {{ formatTimeRemaining(data.timeRemaining) }}
+                ({{ Math.round(data.speed || 0) }} KB/s)
+              </span>
               <span v-if="data.totalParts > 1" class="parts">
                 Part {{ data.completedParts || 0 }}/{{ data.totalParts }}
               </span>
@@ -93,6 +97,21 @@ export default {
 				return `${minutes}m ${seconds % 60}s`;
 			} else {
 				return `${seconds}s`;
+			}
+		},
+		formatTimeRemaining(ms) {
+			if (!ms || ms < 0) return '';
+
+			const seconds = Math.floor(ms / 1000);
+			const minutes = Math.floor(seconds / 60);
+			const hours = Math.floor(minutes / 60);
+
+			if (hours > 0) {
+				return `${hours}h ${minutes % 60}m ${seconds % 60}s left`;
+			} else if (minutes > 0) {
+				return `${minutes}m ${seconds % 60}s left`;
+			} else {
+				return `${seconds}s left`;
 			}
 		}
 	},
@@ -260,6 +279,12 @@ export default {
           .parts {
             color: #718096;
             font-weight: 500;
+          }
+
+          .time-speed {
+            color: #4facfe;
+            font-weight: 600;
+            font-size: 0.95em;
           }
         }
 

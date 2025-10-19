@@ -30,7 +30,7 @@
             <img src="/logo-white.svg">
           </q-avatar>
           <h5 class="q-mt-md q-mb-xs">Candid Cloud SmartChannel</h5>
-          <p class="text-grey-7 q-mb-none">Version 2.2</p>
+          <p class="text-grey-7 q-mb-none">Version 2.3</p>
         </div>
       </q-card-section>
 
@@ -49,7 +49,8 @@
 
           <p class="text-weight-medium q-mb-xs">Features:</p>
           <ul class="q-pl-md">
-            <li>Multi-file uploads with progress tracking</li>
+            <li>Parallel uploads (4 concurrent files)</li>
+            <li>Real-time speed and time tracking</li>
             <li>Upload cancellation</li>
             <li>Multipart upload support (95MB chunks)</li>
             <li>Drag-and-drop file management</li>

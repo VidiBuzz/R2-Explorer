@@ -100,17 +100,34 @@ export const useMainStore = defineStore("main", {
 					startTime: Date.now(),
 					endTime: null,
 					duration: null,
+					uploadedBytes: 0,
+					speed: 0,
+					timeRemaining: null,
 				};
 			});
 		},
-	setUploadProgress({ filename, progress, partNumber, totalParts }) {
+	setUploadProgress({ filename, progress, partNumber, totalParts, uploadedBytes }) {
 		if (this.uploadingFiles[filename]) {
+			const elapsed = Date.now() - this.uploadingFiles[filename].startTime;
+			const uploaded = uploadedBytes || (this.uploadingFiles[filename].fileSize * progress / 100);
+
+			// Calculate speed in KB/s
+			const speed = elapsed > 0 ? uploaded / elapsed : 0; // bytes per ms
+			const speedKBs = (speed * 1000) / 1024; // KB/s
+
+			// Calculate time remaining
+			const remaining = this.uploadingFiles[filename].fileSize - uploaded;
+			const timeRemaining = speed > 0 ? remaining / speed : null; // milliseconds
+
 			// Create new object to trigger Vue reactivity
 			this.uploadingFiles[filename] = {
 				...this.uploadingFiles[filename],
 				progress: progress,
 				completedParts: partNumber !== undefined ? partNumber : this.uploadingFiles[filename].completedParts,
 				totalParts: totalParts !== undefined ? totalParts : this.uploadingFiles[filename].totalParts,
+				uploadedBytes: uploaded,
+				speed: speedKBs,
+				timeRemaining: timeRemaining,
 			};
 		}
 	},

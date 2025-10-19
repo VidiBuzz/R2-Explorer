@@ -144,118 +144,110 @@ export default {
 				timeout: 0,
 			});
 
-			// Upload files
-			let uploadCount = 0;
-			let uploadSize = 0;
-			for (const [folder, files] of Object.entries(folders)) {
-				notif({
-					message: `Uploading files ${uploadCount + 1}/${allFiles.length}...`,
-					caption: `${Number.parseInt(((uploadCount + 1) * 100) / allFiles.length)}%`, // +1 because still needs to delete the folder
-				});
+			// Upload files with concurrency limit of 4
+			const CONCURRENT_UPLOADS = 4;
+			const uploadQueue = [];
 
+			// Build upload queue
+			for (const [folder, files] of Object.entries(folders)) {
 				let targetFolder = this.selectedFolder + folder;
 				if (targetFolder.length > 0 && targetFolder.slice(-1) !== "/") {
 					targetFolder += "/";
 				}
-
 				if (targetFolder === "/" || targetFolder === ROOT_FOLDER) {
 					targetFolder = "";
 				}
 
 				for (const file of files) {
-					uploadCount += 1;
-					const key = targetFolder + file.name;
-
-					const chunkSize = 95 * 1024 * 1024;
-					// Files bigger than 100MB require multipart upload
-
-				// Create AbortController for this upload
-				const controller = new AbortController();
-				this.mainStore.setUploadController(file.name, controller);
-					try {
-						if (file.size > chunkSize) {
-							const { uploadId } = (
-								await apiHandler.multipartCreate(file, key, this.selectedBucket)
-							).data;
-
-							let partNumber = 1;
-							const parts = [];
-							const totalParts = Math.ceil(file.size / chunkSize);
-							// console.log('total: ', file.size)
-							// console.log('chunk: ', chunkSize)
-
-							for (let start = 0; start < file.size; start += chunkSize) {
-								const end = Math.min(start + chunkSize, file.size);
-								const chunk = file.slice(start, end);
-								// console.log(`${start} -> ${end}`)
-
-								const { data } = await apiHandler.multipartUpload(
-									uploadId,
-									partNumber,
-									this.selectedBucket,
-									key,
-									chunk,
-									(progressEvent) => {
-										//console.log((start + progressEvent.loaded) * 100 / file.size)
-										notif({
-											caption: `${Number.parseInt(((uploadSize + start + progressEvent.loaded) * 100) / totalSize)}%`,
-										});
-										this.mainStore.setUploadProgress({
-											filename: file.name,
-											progress: (start + progressEvent.loaded) * 100 / file.size,
-											partNumber: partNumber,
-											totalParts: totalParts
-										});
-									},
-								controller.signal,
-								);
-
-								parts.push(data);
-								partNumber += 1;
-							}
-
-							await apiHandler.multipartComplete(
-								file,
-								key,
-								this.selectedBucket,
-								parts,
-								uploadId,
-							);
-						} else {
-							await apiHandler.uploadObjects(
-								file,
-								key,
-								this.selectedBucket,
-								(progressEvent) => {
-									//console.log(progressEvent.loaded * 100 / file.size)
-									notif({
-										caption: `${Number.parseInt(((uploadSize + progressEvent.loaded) * 100) / totalSize)}%`,
-									});
-									this.mainStore.setUploadProgress({
-										filename: file.name,
-										progress: progressEvent.loaded * 100 / file.size
-									});
-								},
-						controller.signal,
-							);
-						}
-					} catch (e) {
-					// Handle cancelled uploads
-					if (e.name === 'AbortError' || e.name === 'CanceledError') {
-						this.mainStore.removeUploadingFile(file.name);
-						continue;
-					}
-						console.error(`Unable to upload file ${file.name}: ${e.message}`);
-					}
-
-					// Mark upload as complete and calculate duration
-					this.mainStore.completeUpload(file.name);
-
-					uploadSize += file.size;
-
-					await sleep(200);
+					uploadQueue.push({ file, folder: targetFolder });
 				}
 			}
+
+			// Upload function for a single file
+			const uploadFile = async ({ file, folder }) => {
+				const key = folder + file.name;
+				const chunkSize = 95 * 1024 * 1024;
+				const controller = new AbortController();
+				this.mainStore.setUploadController(file.name, controller);
+
+				try {
+					let uploadedBytes = 0;
+
+					if (file.size > chunkSize) {
+						const { uploadId } = (await apiHandler.multipartCreate(file, key, this.selectedBucket)).data;
+						let partNumber = 1;
+						const parts = [];
+						const totalParts = Math.ceil(file.size / chunkSize);
+
+						for (let start = 0; start < file.size; start += chunkSize) {
+							const end = Math.min(start + chunkSize, file.size);
+							const chunk = file.slice(start, end);
+
+							const { data } = await apiHandler.multipartUpload(
+								uploadId, partNumber, this.selectedBucket, key, chunk,
+								(progressEvent) => {
+									uploadedBytes = start + progressEvent.loaded;
+									this.mainStore.setUploadProgress({
+										filename: file.name,
+										progress: (uploadedBytes * 100) / file.size,
+										partNumber: partNumber,
+										totalParts: totalParts,
+										uploadedBytes: uploadedBytes
+									});
+								},
+								controller.signal
+							);
+							parts.push(data);
+							partNumber += 1;
+						}
+						await apiHandler.multipartComplete(file, key, this.selectedBucket, parts, uploadId);
+					} else {
+						await apiHandler.uploadObjects(file, key, this.selectedBucket,
+							(progressEvent) => {
+								uploadedBytes = progressEvent.loaded;
+								this.mainStore.setUploadProgress({
+									filename: file.name,
+									progress: (uploadedBytes * 100) / file.size,
+									uploadedBytes: uploadedBytes
+								});
+							},
+							controller.signal
+						);
+					}
+					this.mainStore.completeUpload(file.name);
+				} catch (e) {
+					if (e.name === 'AbortError' || e.name === 'CanceledError') {
+						this.mainStore.removeUploadingFile(file.name);
+					} else {
+						console.error(`Unable to upload file ${file.name}: ${e.message}`);
+					}
+				}
+			};
+
+			// Upload with concurrency control
+			const uploadWithConcurrency = async (queue, concurrency) => {
+				const executing = [];
+				let completed = 0;
+
+				for (const item of queue) {
+					const promise = uploadFile(item).then(() => {
+						executing.splice(executing.indexOf(promise), 1);
+						completed++;
+						notif({
+							message: `Uploading files ${completed}/${queue.length}...`,
+							caption: `${Math.round((completed * 100) / queue.length)}%`,
+						});
+					});
+					executing.push(promise);
+
+					if (executing.length >= concurrency) {
+						await Promise.race(executing);
+					}
+				}
+				await Promise.all(executing);
+			};
+
+			await uploadWithConcurrency(uploadQueue, CONCURRENT_UPLOADS);
 
 			notif({
 				icon: "done", // we add an icon
