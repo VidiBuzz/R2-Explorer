@@ -118,7 +118,10 @@ export const useMainStore = defineStore("main", {
 		this.uploadingFiles = {};
 	},
 	removeUploadingFile(filename) {
-		delete this.uploadingFiles[filename];
+		// Use reactive deletion to ensure UI updates immediately
+		const newFiles = { ...this.uploadingFiles };
+		delete newFiles[filename];
+		this.uploadingFiles = newFiles;
 	},
 	completeUpload(filename) {
 		if (this.uploadingFiles[filename]) {
