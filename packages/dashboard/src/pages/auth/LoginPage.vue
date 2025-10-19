@@ -30,8 +30,16 @@
             v-model="form.password"
             label="Password"
             lazy-rules
-            type='password'
-          />
+            :type="isPwd ? 'password' : 'text'"
+          >
+            <template v-slot:append>
+              <q-icon
+                :name="isPwd ? 'visibility_off' : 'visibility'"
+                class="cursor-pointer"
+                @click="isPwd = !isPwd"
+              />
+            </template>
+          </q-input>
 
           <q-toggle v-model="form.remind" label="Remember me" />
 
@@ -56,6 +64,7 @@ export default defineComponent({
 		return {
 			loading: false,
 			showError: "",
+			isPwd: true,
 			form: {
 				username: "",
 				password: "",

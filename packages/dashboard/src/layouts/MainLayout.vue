@@ -75,8 +75,14 @@ export default {
 }
 
 .modern-header {
-  // TRUE 3D HEADER - BLUE THEME
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
+  // TRUE 3D HEADER - TOP TO BOTTOM GRADIENT WITH CENTER HIGHLIGHT
+  background: linear-gradient(180deg,
+    #182f5c 0%,              // 20% darker top
+    #1e3c72 15%,             // Transitioning
+    #2a5298 50%,             // Bright center highlight
+    #1e3c72 85%,             // Transitioning
+    #182f5c 100%             // 20% darker bottom
+  ) !important;
   box-shadow:
     0 8px 32px rgba(30, 60, 114, 0.4),
     0 4px 16px rgba(42, 82, 152, 0.3),

@@ -5,7 +5,7 @@
     <q-avatar>
       <img src="/logo-white.svg">
     </q-avatar>
-    Candid Cloud SmartChannel
+    <span class="title-lato">Candid Cloud</span> <span class="title-kumbh">SmartChannel</span>
   </q-toolbar-title>
   <q-space />
   <div v-if="mainStore.buckets.length > 1">
@@ -29,8 +29,8 @@
           <q-avatar size="80px">
             <img src="/logo-white.svg">
           </q-avatar>
-          <h5 class="q-mt-md q-mb-xs">Candid Cloud SmartChannel</h5>
-          <p class="text-grey-7 q-mb-none">Version 2.8</p>
+          <h5 class="q-mt-md q-mb-xs"><span class="title-lato">Candid Cloud</span> <span class="title-kumbh">SmartChannel</span></h5>
+          <p class="text-grey-7 q-mb-none">Version 2.24</p>
         </div>
       </q-card-section>
 
@@ -79,3 +79,16 @@ export default defineComponent({
 	},
 });
 </script>
+
+<style lang="scss">
+// Font styles for split title - moved here to prevent tree-shaking
+.title-lato {
+  font-family: 'Lato', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.title-kumbh {
+  font-family: 'Kumbh Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  font-weight: 600 !important;
+}
+</style>

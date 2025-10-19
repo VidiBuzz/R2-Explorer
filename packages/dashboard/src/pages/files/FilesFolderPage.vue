@@ -176,7 +176,7 @@
           <template v-slot:body-cell-name="prop">
             <td class="flex" style="align-items: center">
               <q-icon :name="prop.row.icon" size="sm" :color="prop.row.color" class="q-mr-xs" />
-              {{prop.row.name}}
+              <span class="file-name-text" :title="prop.row.name">{{prop.row.name}}</span>
             </td>
           </template>
 
@@ -299,7 +299,7 @@ export default defineComponent({
 				name: "size",
 				required: true,
 				label: "Size",
-				align: "left",
+				align: "right",
 				field: "size",
 				sortable: true,
 				sort: (a, b, rowA, rowB) => {
@@ -309,6 +309,7 @@ export default defineComponent({
 			{
 				name: "options",
 				label: "",
+				align: "center",
 				sortable: false,
 			},
 		],
@@ -867,37 +868,50 @@ export default defineComponent({
     transform: translateZ(20px);
 
     tr {
+      height: 60px;
+
       th {
         color: #1a1a1a;
         font-weight: 800;
         font-size: 0.95em;
         letter-spacing: 0.5px;
-        padding: 18px 20px;
+        padding: 16px 24px;
+        vertical-align: middle;
         text-shadow:
           0 1px 1px rgba(255, 255, 255, 0.6),
           0 -1px 1px rgba(0, 0, 0, 0.2);
-        vertical-align: middle;
-        line-height: 1;
+        position: relative;
 
-        // Fixed widths for column alignment
-        &:nth-child(1) { flex: 0 0 45%; min-width: 200px; } // Name
-        &:nth-child(2) { flex: 0 0 25%; min-width: 150px; } // Last Modified
-        &:nth-child(3) { flex: 0 0 20%; min-width: 100px; } // Size
-        &:nth-child(4) { flex: 0 0 10%; min-width: 60px; }  // Options
+        // Resizable handle for column headers
+        &::after {
+          content: '';
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
+          width: 4px;
+          cursor: col-resize;
+          opacity: 0;
+          transition: opacity 0.2s;
+          background: rgba(30, 60, 114, 0.3);
+        }
 
-        // STRONGER 3D RAISED EFFECT
-        background: linear-gradient(180deg,
-          rgba(255, 255, 255, 0.4) 0%,
-          rgba(255, 255, 255, 0.2) 30%,
-          rgba(0, 0, 0, 0.08) 70%,
-          rgba(0, 0, 0, 0.15) 100%
-        );
+        &:hover::after {
+          opacity: 1;
+        }
+
+        // Match body column widths for perfect alignment
+        &:nth-child(1) { width: auto; min-width: 250px; flex: 1 1 auto; max-width: 600px; } // Name
+        &:nth-child(2) { width: 180px; min-width: 180px; flex: 0 0 180px; resize: horizontal; } // Last Modified
+        &:nth-child(3) { width: 120px; min-width: 120px; flex: 0 0 120px; text-align: right; resize: horizontal; } // Size
+        &:nth-child(4) { width: 60px; min-width: 60px; flex: 0 0 60px; text-align: center; } // Options
       }
     }
   }
 
   :deep(tbody) {
     tr {
+      height: 60px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       background: rgba(255, 255, 255, 0.5);
 
@@ -910,15 +924,43 @@ export default defineComponent({
       }
 
       td {
-        padding: 16px 20px;
+        padding: 16px 24px;
         border-bottom: 1px solid rgba(30, 60, 114, 0.08);
         backdrop-filter: blur(5px);
+        vertical-align: middle;
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        position: relative;
 
-        // Match header column widths for perfect alignment
-        &:nth-child(1) { flex: 0 0 45%; min-width: 200px; } // Name
-        &:nth-child(2) { flex: 0 0 25%; min-width: 150px; } // Last Modified
-        &:nth-child(3) { flex: 0 0 20%; min-width: 100px; } // Size
-        &:nth-child(4) { flex: 0 0 10%; min-width: 60px; }  // Options
+        // Flex-based column widths with proper spacing
+        &:nth-child(1) {
+          width: auto;
+          min-width: 250px;
+          flex: 1 1 auto;
+          max-width: 600px; // Prevent extremely long names from breaking layout
+        }
+        &:nth-child(2) {
+          width: 180px;
+          min-width: 180px;
+          flex: 0 0 180px;
+          resize: horizontal; // Allow horizontal resizing
+        }
+        &:nth-child(3) {
+          width: 120px;
+          min-width: 120px;
+          flex: 0 0 120px;
+          text-align: right;
+          resize: horizontal;
+        }
+        &:nth-child(4) {
+          width: 60px;
+          min-width: 60px;
+          flex: 0 0 60px;
+          text-align: center;
+          overflow: visible; // Allow menu to show
+        }
       }
     }
   }
@@ -928,25 +970,46 @@ export default defineComponent({
   }
 }
 
-.modern-file-table table,
-.modern-file-table tbody,
-.modern-file-table thead {
+// Truncate long file names with ellipsis
+.file-name-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+.modern-file-table table {
   width: 100%;
-  display: block;
+  table-layout: fixed;
+  border-spacing: 0;
+  border-collapse: collapse;
+  display: table;
+}
+
+.modern-file-table thead {
+  display: table-header-group;
+}
+
+.modern-file-table tbody {
+  display: table-row-group;
+}
+
+.modern-file-table tr {
+  display: table-row;
+}
+
+.modern-file-table th,
+.modern-file-table td {
+  display: table-cell;
 }
 
 .modern-file-table td:first-of-type,
 .modern-file-table th:first-of-type {
   overflow-x: hidden;
   white-space: nowrap;
-  flex-grow: 1;
   text-overflow: ellipsis;
-}
-
-.modern-file-table tr {
-  display: flex;
-  width: 100%;
-  justify-content: center;
 }
 
 // FILE OPERATIONS TOOLBAR
