@@ -1,48 +1,52 @@
 <template>
-  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0" class="uploading-popup">
-    <div class="card">
-      <div class="card-header d-flex flex-row">
-        Uploading {{ Object.keys(mainStore.uploadingFiles).length }} files
-        <button class="btn btn-warning btn-xs ms-2" @click="cancelAll" v-if="hasActiveUploads">Cancel All</button>
-        <button class="btn btn-primary btn-xs btn-close" @click="close"></button>
+  <div v-if="Object.keys(mainStore.uploadingFiles).length > 0" class="upload-panel-bottom">
+    <div class="panel-header">
+      <div class="header-left">
+        <i class="bi bi-cloud-upload"></i>
+        <span class="upload-title">Uploading {{ Object.keys(mainStore.uploadingFiles).length }} file(s)</span>
       </div>
-      <div class="card-body">
-        <table class="upload-table">
-          <tbody>
-          <tr class="table-active" v-for="(data, filename) in mainStore.uploadingFiles" :key="filename">
-            <td class="progress-filename">
-              <div class="filename-text">{{ filename }}</div>
-              <div class="file-size-text" v-if="data.fileSize">{{ formatFileSize(data.fileSize) }}</div>
-            </td>
-            <td class="progress-cell">
-              <div v-if="data.progress === 100" class="upload-complete">
-                <i class="bi bi-check-circle-fill"></i> Complete
-                <span v-if="data.duration" class="upload-duration">
-                  ({{ formatDuration(data.duration) }})
-                </span>
-              </div>
-              <div v-else>
-                <div class="progress-info">
-                  <span class="progress-percent">{{ Math.round(data.progress || 0) }}%</span>
-                  <span v-if="data.totalParts > 1" class="progress-parts">
-                    (Part {{ data.completedParts || 0 }}/{{ data.totalParts }})
-                  </span>
-                </div>
-                <div class="progress">
-                  <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar"
-                       :aria-valuenow="data.progress || 0" aria-valuemin="0" aria-valuemax="100"
-                       :style="{ 'width': `${data.progress || 0}%` }"></div>
-                </div>
-              </div>
-            </td>
-            <td class="cancel-cell" v-if="data.progress < 100">
-              <button class="btn btn-danger btn-xs" @click="cancelUpload(filename)">
-                <i class="bi bi-x-circle"></i>
-              </button>
-            </td>
-          </tr>
-          </tbody>
-        </table>
+      <div class="header-right">
+        <button class="btn-cancel-all" @click="cancelAll" v-if="hasActiveUploads">
+          <i class="bi bi-x-circle"></i> Cancel All
+        </button>
+        <button class="btn-minimize" @click="close">
+          <i class="bi bi-chevron-down"></i>
+        </button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="upload-row" v-for="(data, filename) in mainStore.uploadingFiles" :key="filename">
+        <div class="file-info">
+          <i class="bi bi-file-earmark"></i>
+          <div class="file-details">
+            <div class="filename">{{ filename }}</div>
+            <div class="file-size" v-if="data.fileSize">{{ formatFileSize(data.fileSize) }}</div>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div v-if="data.progress === 100" class="upload-complete">
+            <i class="bi bi-check-circle-fill"></i> Complete
+            <span v-if="data.duration" class="duration">({{ formatDuration(data.duration) }})</span>
+          </div>
+          <div v-else class="progress-container">
+            <div class="progress-stats">
+              <span class="percentage">{{ Math.round(data.progress || 0) }}%</span>
+              <span v-if="data.totalParts > 1" class="parts">
+                Part {{ data.completedParts || 0 }}/{{ data.totalParts }}
+              </span>
+            </div>
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar-fill" :style="{ 'width': `${data.progress || 0}%` }"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="actions" v-if="data.progress < 100">
+          <button class="btn-cancel" @click="cancelUpload(filename)" title="Cancel upload">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -96,247 +100,264 @@ export default {
 </script>
 
 <style scoped lang="scss">
-.uploading-popup {
+// FILEZILLA-STYLE FULL-WIDTH BOTTOM PANEL
+.upload-panel-bottom {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 1000;
-  min-width: 480px;
-  max-width: 600px;
+  max-height: 35vh;
 
-  .card {
-    overflow: auto;
-    display: block;
-    max-height: 50vh;
-    margin-bottom: 0;
+  // TRUE GLASSMORPHISM
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
 
-    // TRUE GLASSMORPHISM
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+  // 3D DEPTH
+  box-shadow:
+    0 -8px 32px rgba(0, 0, 0, 0.15),
+    0 -4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-top: 2px solid rgba(102, 126, 234, 0.3);
 
-    // REAL 3D DEPTH
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow:
-      0 20px 60px rgba(0, 0, 0, 0.2),
-      0 8px 24px rgba(0, 0, 0, 0.12),
-      inset 0 2px 0 rgba(255, 255, 255, 0.8),
-      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-
-    // 3D transform effect
-    transform: translateZ(20px) perspective(1000px);
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-      transform: translateY(-4px) translateZ(30px) perspective(1000px);
-      box-shadow:
-        0 28px 80px rgba(0, 0, 0, 0.25),
-        0 12px 32px rgba(0, 0, 0, 0.15),
-        inset 0 2px 0 rgba(255, 255, 255, 0.8),
-        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
-    }
-  }
-
-  .card-body {
-    background: white;
-    border-radius: 0 0 20px 20px;
-    padding: 12px;
-  }
-
-  .card-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-    border-radius: 20px 20px 0 0;
-    padding: 16px 20px;
-    font-weight: 600;
-    font-size: 1.05em;
-    letter-spacing: 0.3px;
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-
-    .btn {
-      border-radius: 10px;
-      padding: 6px 14px;
-      font-weight: 500;
-      font-size: 0.85em;
-      transition: all 0.2s ease;
-      border: none;
-
-      &.btn-warning {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-        }
-      }
-
-      &.btn-primary {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
-        }
-      }
-    }
-  }
-
-  .upload-table {
-    width: 100%;
-    margin: 0;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-  }
-
-  .table-active {
-    background: linear-gradient(135deg, #fdfbfb 0%, #f7f9fc 100%);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transition: all 0.2s ease;
-
-    &:hover {
-      transform: translateX(4px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    }
-  }
-
-  .progress {
-    height: 24px;
-    margin-top: 6px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06);
-    overflow: hidden;
-    position: relative;
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.3) 0%, transparent 100%);
-      border-radius: 12px 12px 0 0;
-    }
-  }
-
-  .progress-bar {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-    border-radius: 12px;
-    position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
-      border-radius: 12px 12px 0 0;
-    }
-  }
-
-  .progress-filename {
-    padding: 12px 16px;
-    min-width: 200px;
-  }
-
-  .filename-text {
-    font-weight: 600;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    color: #2d3748;
-    font-size: 0.95em;
-  }
-
-  .file-size-text {
-    font-size: 0.8em;
-    color: #718096;
-    margin-top: 4px;
-    font-weight: 500;
-  }
-
-  .progress-cell {
-    padding: 12px 16px;
-    min-width: 200px;
-  }
-
-  .cancel-cell {
-    padding: 12px;
-    text-align: center;
-    width: 60px;
-
-    .btn-danger {
-      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-      border: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
-      transition: all 0.2s ease;
-
-      &:hover {
-        transform: translateY(-2px) scale(1.05);
-        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
-      }
-    }
-  }
-
-  .progress-info {
+  .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 6px;
-    font-size: 0.9em;
-  }
-
-  .progress-percent {
-    font-weight: 700;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-size: 1.05em;
-  }
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 
-  .progress-parts {
-    color: #718096;
-    font-size: 0.85em;
-    font-weight: 500;
-  }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.05em;
 
-  .btn-close {
-    margin-right: 0;
-    margin-left: auto;
-  }
+      i {
+        font-size: 1.3em;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+      }
+    }
 
-  .upload-complete {
-    text-align: center;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 700;
-    font-size: 1.05em;
+    .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
 
-    i {
-      color: #38ef7d;
-      filter: drop-shadow(0 2px 4px rgba(56, 239, 125, 0.3));
+    button {
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9em;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.25);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      &.btn-minimize {
+        padding: 8px 12px;
+      }
+
+      i {
+        font-size: 1.1em;
+      }
     }
   }
 
-  .upload-duration {
-    display: block;
-    font-size: 0.85em;
-    color: #718096;
-    font-weight: 500;
-    margin-top: 4px;
+  .panel-body {
+    padding: 16px 24px;
+    max-height: calc(35vh - 50px);
+    overflow-y: auto;
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .upload-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    border: 1px solid rgba(102, 126, 234, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+
+    &:hover {
+      transform: translateX(6px);
+      box-shadow: 0 6px 18px rgba(102, 126, 234, 0.15);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      flex-shrink: 0;
+
+      i {
+        font-size: 2em;
+        color: #667eea;
+        filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+      }
+
+      .file-details {
+        .filename {
+          font-weight: 600;
+          color: #2d3748;
+          font-size: 0.95em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 250px;
+        }
+
+        .file-size {
+          font-size: 0.85em;
+          color: #718096;
+          margin-top: 2px;
+        }
+      }
+    }
+
+    .progress-section {
+      flex-grow: 1;
+      min-width: 300px;
+
+      .progress-container {
+        .progress-stats {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 6px;
+          font-size: 0.9em;
+
+          .percentage {
+            font-weight: 700;
+            font-size: 1.1em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+          }
+
+          .parts {
+            color: #718096;
+            font-weight: 500;
+          }
+        }
+
+        .progress-bar-wrapper {
+          height: 28px;
+          background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
+          border-radius: 14px;
+          overflow: hidden;
+          box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
+            border-radius: 14px 14px 0 0;
+            z-index: 1;
+          }
+
+          .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 14px;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 12px rgba(102, 126, 234, 0.6);
+            position: relative;
+
+            &::after {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              height: 50%;
+              background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
+              border-radius: 14px 14px 0 0;
+            }
+          }
+        }
+      }
+
+      .upload-complete {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 1.05em;
+        color: #38ef7d;
+
+        i {
+          font-size: 1.3em;
+          filter: drop-shadow(0 2px 4px rgba(56, 239, 125, 0.4));
+        }
+
+        .duration {
+          font-size: 0.85em;
+          color: #718096;
+          font-weight: 500;
+          margin-left: 6px;
+        }
+      }
+    }
+
+    .actions {
+      flex-shrink: 0;
+
+      .btn-cancel {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        border: none;
+        border-radius: 12px;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+
+        i {
+          color: white;
+          font-size: 1.2em;
+          font-weight: bold;
+        }
+
+        &:hover {
+          transform: translateY(-3px) scale(1.1) rotate(90deg);
+          box-shadow: 0 8px 20px rgba(245, 87, 108, 0.5);
+        }
+
+        &:active {
+          transform: translateY(-1px) scale(1.05) rotate(90deg);
+        }
+      }
+    }
   }
 }
 </style>
