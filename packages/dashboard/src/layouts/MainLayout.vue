@@ -62,26 +62,50 @@ export default {
 
 <style scoped lang="scss">
 .modern-layout {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  // BEAUTIFUL GRADIENT BACKGROUND
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .modern-header {
+  // TRUE 3D HEADER
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+  box-shadow:
+    0 8px 32px rgba(102, 126, 234, 0.4),
+    0 4px 16px rgba(102, 126, 234, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modern-toolbar {
-  min-height: 64px;
+  min-height: 68px;
+  padding: 0 24px;
 }
 
 .modern-drawer {
-  background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
-  border-right: 1px solid rgba(102, 126, 234, 0.1);
-  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.05);
+  // GLASSMORPHIC SIDEBAR
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-right: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    8px 0 32px rgba(0, 0, 0, 0.12),
+    inset -1px 0 0 rgba(255, 255, 255, 0.8);
+
+  // SPACING
+  padding: 10px;
 }
 
 .modern-page-container {
   background: transparent;
-  padding: 20px;
+  padding: 0;
 }
 </style>

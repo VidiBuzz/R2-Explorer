@@ -293,42 +293,93 @@ export default defineComponent({
 <style scoped lang="scss">
 .modern-files-page {
   background: transparent;
+  padding: 20px;
 }
 
 .modern-content {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-  padding: 24px;
-  margin: 0 auto;
+  // TRUE GLASSMORPHISM
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  // REAL 3D DEPTH
+  border-radius: 24px;
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.15),
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+
+  // PROPER SPACING
+  padding: 32px;
+  margin: 10px;
   max-width: 1400px;
+
+  // 3D TRANSFORM
+  transform: translateZ(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, 0.18),
+      0 10px 28px rgba(0, 0, 0, 0.12),
+      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  }
 }
 
 .modern-breadcrumbs {
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-radius: 12px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
+
+  // GLASSMORPHISM
+  background: rgba(102, 126, 234, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  // 3D DEPTH
+  border-radius: 16px;
+  box-shadow:
+    0 4px 16px rgba(102, 126, 234, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(102, 126, 234, 0.2);
   font-weight: 600;
 
   :deep(.q-breadcrumbs__el) {
     color: #667eea;
     transition: all 0.2s ease;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 
     &:hover {
       color: #764ba2;
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      text-shadow: 0 2px 4px rgba(118, 75, 162, 0.3);
     }
   }
 }
 
 .modern-file-table {
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  // TRUE 3D ELEVATION
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+
+  // SPACING
+  margin: 10px 0;
+
+  // GLASSMORPHIC BACKGROUND
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
 
   :deep(thead) {
+    // 3D GRADIENT HEADER
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow:
+      0 4px 12px rgba(102, 126, 234, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
     tr {
       th {
@@ -336,30 +387,35 @@ export default defineComponent({
         font-weight: 700;
         font-size: 0.95em;
         letter-spacing: 0.5px;
-        padding: 16px;
+        padding: 18px 20px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       }
     }
   }
 
   :deep(tbody) {
     tr {
-      transition: all 0.2s ease;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      background: rgba(255, 255, 255, 0.5);
 
       &:hover {
-        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%);
-        transform: translateX(4px);
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%);
+        transform: translateX(8px) translateZ(10px);
+        box-shadow:
+          -4px 0 12px rgba(102, 126, 234, 0.2),
+          0 4px 16px rgba(102, 126, 234, 0.15);
       }
 
       td {
-        padding: 14px 16px;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(102, 126, 234, 0.08);
+        backdrop-filter: blur(5px);
       }
     }
   }
 
   :deep(.q-icon) {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
   }
 }
 

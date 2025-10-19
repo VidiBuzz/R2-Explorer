@@ -98,10 +98,10 @@ export default {
 <style scoped lang="scss">
 .uploading-popup {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  bottom: 24px;
+  right: 24px;
   z-index: 1000;
-  min-width: 450px;
+  min-width: 480px;
   max-width: 600px;
 
   .card {
@@ -110,26 +110,31 @@ export default {
     max-height: 50vh;
     margin-bottom: 0;
 
-    // Modern glassmorphism design with 3D depth
-    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.8);
+    // TRUE GLASSMORPHISM
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+
+    // REAL 3D DEPTH
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
     box-shadow:
-      0 10px 40px rgba(0, 0, 0, 0.1),
-      0 2px 8px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.9);
+      0 20px 60px rgba(0, 0, 0, 0.2),
+      0 8px 24px rgba(0, 0, 0, 0.12),
+      inset 0 2px 0 rgba(255, 255, 255, 0.8),
+      inset 0 -1px 0 rgba(0, 0, 0, 0.05);
 
     // 3D transform effect
-    transform: translateZ(0);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(20px) perspective(1000px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-      transform: translateY(-2px) translateZ(0);
+      transform: translateY(-4px) translateZ(30px) perspective(1000px);
       box-shadow:
-        0 15px 50px rgba(0, 0, 0, 0.12),
-        0 4px 12px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+        0 28px 80px rgba(0, 0, 0, 0.25),
+        0 12px 32px rgba(0, 0, 0, 0.15),
+        inset 0 2px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05);
     }
   }
 
