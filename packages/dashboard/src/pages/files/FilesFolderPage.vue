@@ -845,32 +845,15 @@ export default defineComponent({
   backdrop-filter: blur(10px);
 
   :deep(thead) {
-    // TOP-TO-BOTTOM GRADIENT: darker edges, highlighted center
-    background: linear-gradient(180deg,
-      #909090 0%,              // 20% darker top
-      #c8c8c8 15%,             // Lighter
-      #e0e0e0 50%,             // Bright center highlight
-      #c8c8c8 85%,             // Lighter
-      #909090 100%             // 20% darker bottom
-    );
+    background: #808080;
     border: 1px solid #707070;
     border-bottom: 3px solid #505050;
-
-    // ULTRA 3D DEPTH - REALLY POPPING OUT
-    box-shadow:
-      0 10px 30px rgba(0, 0, 0, 0.35),
-      0 6px 16px rgba(0, 0, 0, 0.25),
-      0 3px 8px rgba(0, 0, 0, 0.15),
-      inset 0 2px 0 rgba(255, 255, 255, 0.6),
-      inset 0 -2px 0 rgba(0, 0, 0, 0.25);
-
-    // Extra pop with transform
-    transform: translateZ(20px);
 
     tr {
       height: 60px;
 
       th {
+        background: #808080 !important;
         color: #1a1a1a;
         font-weight: 800;
         font-size: 0.95em;
@@ -913,10 +896,15 @@ export default defineComponent({
     tr {
       height: 60px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      background: rgba(255, 255, 255, 0.5);
+      background: rgba(255, 255, 255, 1);
+
+      // Zebra stripes - every other row 10% darker
+      &:nth-child(even) {
+        background: rgba(0, 0, 0, 0.1);
+      }
 
       &:hover {
-        background: linear-gradient(135deg, rgba(30, 60, 114, 0.08) 0%, rgba(42, 82, 152, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(30, 60, 114, 0.08) 0%, rgba(42, 82, 152, 0.05) 100%) !important;
         transform: translateX(8px) translateZ(10px);
         box-shadow:
           -4px 0 12px rgba(30, 60, 114, 0.2),
@@ -990,6 +978,7 @@ export default defineComponent({
 
 .modern-file-table thead {
   display: table-header-group;
+  background: #808080 !important;
 }
 
 .modern-file-table tbody {
@@ -1003,6 +992,10 @@ export default defineComponent({
 .modern-file-table th,
 .modern-file-table td {
   display: table-cell;
+}
+
+.modern-file-table th {
+  background: #808080 !important;
 }
 
 .modern-file-table td:first-of-type,
