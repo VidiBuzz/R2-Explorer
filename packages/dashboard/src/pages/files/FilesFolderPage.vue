@@ -1,13 +1,93 @@
 <template>
   <q-page class="modern-files-page">
     <div class="q-pa-md modern-content">
-      <q-breadcrumbs class="modern-breadcrumbs">
-        <q-breadcrumbs-el style="cursor: pointer" v-for="obj in breadcrumbs" :key="obj.name" :label="obj.name" @click="breadcrumbsClick(obj)" />
-      </q-breadcrumbs>
+      <div class="header-controls">
+        <q-breadcrumbs class="modern-breadcrumbs">
+          <q-breadcrumbs-el style="cursor: pointer" v-for="obj in breadcrumbs" :key="obj.name" :label="obj.name" @click="breadcrumbsClick(obj)" />
+        </q-breadcrumbs>
+
+        <div class="view-toggle">
+          <q-btn
+            :flat="viewMode !== 'grid'"
+            :unelevated="viewMode === 'grid'"
+            round
+            icon="grid_view"
+            @click="viewMode = 'grid'"
+            :color="viewMode === 'grid' ? 'primary' : 'grey-7'"
+            size="md"
+          >
+            <q-tooltip>Grid View</q-tooltip>
+          </q-btn>
+          <q-btn
+            :flat="viewMode !== 'table'"
+            :unelevated="viewMode === 'table'"
+            round
+            icon="view_list"
+            @click="viewMode = 'table'"
+            :color="viewMode === 'table' ? 'primary' : 'grey-7'"
+            size="md"
+          >
+            <q-tooltip>Table View</q-tooltip>
+          </q-btn>
+        </div>
+      </div>
 
       <drag-and-drop ref="uploader">
 
+        <!-- GRID VIEW -->
+        <div v-if="viewMode === 'grid'" class="files-grid">
+          <div v-if="loading" class="grid-loading">
+            <q-spinner color="primary" size="xl" />
+          </div>
+
+          <div v-else-if="rows.length === 0" class="grid-empty">
+            <q-icon name="folder" color="orange" size="80px" />
+            <p>This folder is empty</p>
+          </div>
+
+          <div v-else class="grid-container">
+            <div
+              v-for="row in rows"
+              :key="row.name"
+              class="file-card"
+              @dblclick="openObject(row)"
+              @click="$bus.emit('openFileDetails', row)"
+            >
+              <q-menu touch-position context-menu>
+                <FileContextMenu :prop="{row}" @openObject="openObject" @deleteObject="$refs.options.deleteObject" @renameObject="$refs.options.renameObject" @updateMetadataObject="$refs.options.updateMetadataObject" />
+              </q-menu>
+
+              <div class="card-icon-wrapper">
+                <q-icon :name="row.icon" :color="row.color" class="card-icon" />
+              </div>
+
+              <div class="card-info">
+                <div class="card-name">{{ row.name }}</div>
+                <div class="card-meta">
+                  <span class="card-size">{{ row.size }}</span>
+                  <span class="card-date">{{ row.lastModified }}</span>
+                </div>
+              </div>
+
+              <q-btn
+                round
+                flat
+                icon="more_vert"
+                size="sm"
+                class="card-menu-btn"
+                @click.stop
+              >
+                <q-menu>
+                  <FileContextMenu :prop="{row}" @openObject="openObject" @deleteObject="$refs.options.deleteObject" @renameObject="$refs.options.renameObject" @updateMetadataObject="$refs.options.updateMetadataObject" />
+                </q-menu>
+              </q-btn>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE VIEW -->
         <q-table
+          v-else
           ref="table"
           :rows="rows"
           :columns="columns"
@@ -93,6 +173,7 @@ export default defineComponent({
 	components: { FileContextMenu, FileOptions, DragAndDrop, FilePreview },
 	data: () => ({
 		loading: false,
+		viewMode: 'grid',
 		rows: [],
 		columns: [
 			{
@@ -327,36 +408,214 @@ export default defineComponent({
   }
 }
 
-.modern-breadcrumbs {
+// HEADER WITH BREADCRUMBS AND VIEW TOGGLE
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 24px;
+  gap: 16px;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(30, 60, 114, 0.15);
+}
+
+.modern-breadcrumbs {
+  flex: 1;
   padding: 16px 20px;
 
   // GLASSMORPHISM
-  background: rgba(102, 126, 234, 0.1);
+  background: rgba(30, 60, 114, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
   // 3D DEPTH
   border-radius: 16px;
   box-shadow:
-    0 4px 16px rgba(102, 126, 234, 0.15),
+    0 4px 16px rgba(30, 60, 114, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(102, 126, 234, 0.2);
+  border: 1px solid rgba(30, 60, 114, 0.2);
   font-weight: 600;
+  font-size: 1.05em;
 
   :deep(.q-breadcrumbs__el) {
-    color: #667eea;
+    color: #1e3c72;
     transition: all 0.2s ease;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 
     &:hover {
-      color: #764ba2;
+      color: #2a5298;
       transform: translateY(-2px);
-      text-shadow: 0 2px 4px rgba(118, 75, 162, 0.3);
+      text-shadow: 0 2px 4px rgba(42, 82, 152, 0.3);
     }
   }
 }
 
+// GRID VIEW STYLES
+.files-grid {
+  min-height: 400px;
+}
+
+.grid-loading,
+.grid-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+
+  p {
+    font-size: 1.2em;
+    font-weight: 600;
+    color: #718096;
+    margin: 0;
+  }
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
+  padding: 10px 0;
+}
+
+.file-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 16px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-radius: 20px;
+  border: 1px solid rgba(30, 60, 114, 0.15);
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 200px;
+
+  // BEAUTIFUL CARD SHADOW
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+  &:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(30, 60, 114, 0.4);
+    background: rgba(255, 255, 255, 1);
+
+    // ENHANCED HOVER SHADOW
+    box-shadow:
+      0 20px 50px rgba(30, 60, 114, 0.25),
+      0 10px 30px rgba(30, 60, 114, 0.15),
+      0 4px 12px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+
+    .card-icon-wrapper {
+      transform: scale(1.1);
+      box-shadow:
+        0 12px 35px rgba(30, 60, 114, 0.35),
+        0 6px 18px rgba(30, 60, 114, 0.25);
+    }
+
+    .card-menu-btn {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: translateY(-4px) scale(1.01);
+  }
+}
+
+.card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 90px;
+  height: 90px;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(30, 60, 114, 0.1) 0%, rgba(42, 82, 152, 0.08) 100%);
+  border-radius: 18px;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ICON SHADOW - THE KEY FEATURE
+  box-shadow:
+    0 8px 25px rgba(30, 60, 114, 0.25),
+    0 4px 12px rgba(30, 60, 114, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.card-icon {
+  font-size: 48px !important;
+
+  // BEAUTIFUL ICON DROP SHADOW
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2))
+          drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15));
+}
+
+.card-info {
+  width: 100%;
+  text-align: center;
+}
+
+.card-name {
+  font-size: 0.95em;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 8px;
+  line-height: 1.4;
+}
+
+.card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8em;
+  color: #718096;
+  font-weight: 500;
+}
+
+.card-size {
+  font-weight: 600;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-date {
+  font-size: 0.9em;
+}
+
+.card-menu-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  &:hover {
+    background: white !important;
+    box-shadow: 0 6px 18px rgba(30, 60, 114, 0.2);
+  }
+}
+
+// TABLE VIEW STYLES
 .modern-file-table {
   border-radius: 20px;
   overflow: hidden;
@@ -376,9 +635,9 @@ export default defineComponent({
 
   :deep(thead) {
     // 3D GRADIENT HEADER
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     box-shadow:
-      0 4px 12px rgba(102, 126, 234, 0.4),
+      0 4px 12px rgba(30, 60, 114, 0.4),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
 
     tr {
@@ -399,16 +658,16 @@ export default defineComponent({
       background: rgba(255, 255, 255, 0.5);
 
       &:hover {
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(30, 60, 114, 0.08) 0%, rgba(42, 82, 152, 0.05) 100%);
         transform: translateX(8px) translateZ(10px);
         box-shadow:
-          -4px 0 12px rgba(102, 126, 234, 0.2),
-          0 4px 16px rgba(102, 126, 234, 0.15);
+          -4px 0 12px rgba(30, 60, 114, 0.2),
+          0 4px 16px rgba(30, 60, 114, 0.15);
       }
 
       td {
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(102, 126, 234, 0.08);
+        border-bottom: 1px solid rgba(30, 60, 114, 0.08);
         backdrop-filter: blur(5px);
       }
     }

@@ -1,0 +1,20 @@
+name = "r2-explorer"
+compatibility_date = "2024-11-06"
+main = "packages/worker/worker.ts"
+assets = { directory = "packages/worker/dashboard", binding = "ASSETS", html_handling = "auto-trailing-slash", not_found_handling = "single-page-application" }
+
+[[r2_buckets]]
+binding = "scx"
+bucket_name = "scx"
+
+[[r2_buckets]]
+binding = "candid-studios"
+bucket_name = "candid-studios"
+
+[[r2_buckets]]
+binding = "candidclients"
+bucket_name = "candidclients"
+
+[[r2_buckets]]
+binding = "vidir2"
+bucket_name = "vidir2"

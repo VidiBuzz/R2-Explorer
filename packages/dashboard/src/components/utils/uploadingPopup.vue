@@ -107,7 +107,7 @@ export default {
   left: 0;
   right: 0;
   z-index: 1000;
-  max-height: 35vh;
+  max-height: 50vh;
 
   // TRUE GLASSMORPHISM
   background: rgba(255, 255, 255, 0.95);
@@ -119,17 +119,17 @@ export default {
     0 -8px 32px rgba(0, 0, 0, 0.15),
     0 -4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border-top: 2px solid rgba(102, 126, 234, 0.3);
+  border-top: 2px solid rgba(30, 60, 114, 0.3);
 
   .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 12px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     color: white;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 2px 8px rgba(30, 60, 114, 0.3);
 
     .header-left {
       display: flex;
@@ -181,7 +181,7 @@ export default {
 
   .panel-body {
     padding: 16px 24px;
-    max-height: calc(35vh - 50px);
+    max-height: calc(50vh - 50px);
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.8);
   }
@@ -189,19 +189,20 @@ export default {
   .upload-row {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 14px 18px;
-    margin-bottom: 10px;
+    gap: 16px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
     background: rgba(255, 255, 255, 0.9);
-    border-radius: 16px;
-    border: 1px solid rgba(102, 126, 234, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border-radius: 12px;
+    border: 1px solid rgba(30, 60, 114, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     transition: all 0.3s ease;
+    min-height: 45px;
 
     &:hover {
-      transform: translateX(6px);
-      box-shadow: 0 6px 18px rgba(102, 126, 234, 0.15);
-      border-color: rgba(102, 126, 234, 0.3);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(30, 60, 114, 0.12);
+      border-color: rgba(30, 60, 114, 0.25);
     }
 
     .file-info {
@@ -213,8 +214,8 @@ export default {
 
       i {
         font-size: 2em;
-        color: #667eea;
-        filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+        color: #1e3c72;
+        filter: drop-shadow(0 2px 4px rgba(30, 60, 114, 0.3));
       }
 
       .file-details {
@@ -250,7 +251,7 @@ export default {
           .percentage {
             font-weight: 700;
             font-size: 1.1em;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -263,32 +264,30 @@ export default {
         }
 
         .progress-bar-wrapper {
-          height: 28px;
-          background: linear-gradient(135deg, #e9ecef 0%, #dee2e6 100%);
-          border-radius: 14px;
+          height: 10px;
+          background: linear-gradient(90deg, #f0f0f0 0%, #e8e8e8 100%);
+          border-radius: 8px;
           overflow: hidden;
-          box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.1);
+          box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
           position: relative;
-
-          &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, transparent 100%);
-            border-radius: 14px 14px 0 0;
-            z-index: 1;
-          }
 
           .progress-bar-fill {
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 14px;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 12px rgba(102, 126, 234, 0.6);
+            background: linear-gradient(90deg,
+              #1e3c72 0%,
+              #2a5298 25%,
+              #4facfe 50%,
+              #00f2fe 75%,
+              #4facfe 100%
+            );
+            background-size: 200% 100%;
+            border-radius: 8px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow:
+              0 0 20px rgba(30, 60, 114, 0.5),
+              0 0 10px rgba(0, 242, 254, 0.3);
             position: relative;
+            animation: shimmer 2s infinite linear;
 
             &::after {
               content: '';
@@ -297,9 +296,18 @@ export default {
               left: 0;
               right: 0;
               height: 50%;
-              background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 100%);
-              border-radius: 14px 14px 0 0;
+              background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 100%);
+              border-radius: 8px 8px 0 0;
             }
+          }
+        }
+
+        @keyframes shimmer {
+          0% {
+            background-position: 0% 0%;
+          }
+          100% {
+            background-position: 200% 0%;
           }
         }
       }
@@ -330,31 +338,31 @@ export default {
       flex-shrink: 0;
 
       .btn-cancel {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
         border: none;
-        border-radius: 12px;
-        width: 44px;
-        height: 44px;
+        border-radius: 6px;
+        width: 28px;
+        height: 28px;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+        box-shadow: 0 2px 6px rgba(0, 242, 254, 0.25);
 
         i {
           color: white;
-          font-size: 1.2em;
+          font-size: 0.9em;
           font-weight: bold;
         }
 
         &:hover {
-          transform: translateY(-3px) scale(1.1) rotate(90deg);
-          box-shadow: 0 8px 20px rgba(245, 87, 108, 0.5);
+          transform: translateY(-2px) scale(1.08) rotate(90deg);
+          box-shadow: 0 4px 12px rgba(0, 242, 254, 0.4);
         }
 
         &:active {
-          transform: translateY(-1px) scale(1.05) rotate(90deg);
+          transform: translateY(-1px) scale(1.03) rotate(90deg);
         }
       }
     }

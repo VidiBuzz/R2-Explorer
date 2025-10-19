@@ -85,11 +85,20 @@ export default defineComponent({
 <style scoped lang="scss">
 .q-btn {
   max-width: 100%;
-  padding: 12px;
+  padding: 6px;
   border-radius: 16px;
   font-weight: 600;
+  font-size: 0.6em;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  :deep(.q-icon) {
+    font-size: 1.2em;
+  }
+
+  :deep(.q-btn__content) {
+    font-size: 0.9em;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -116,7 +125,7 @@ export default defineComponent({
     transition: all 0.2s ease;
 
     &:hover {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
       color: white;
       transform: translateX(4px);
     }

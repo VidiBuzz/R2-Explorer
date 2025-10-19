@@ -62,8 +62,8 @@ export default {
 
 <style scoped lang="scss">
 .modern-layout {
-  // BEAUTIFUL GRADIENT BACKGROUND
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+  // BEAUTIFUL GRADIENT BACKGROUND - BLUE THEME
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #4facfe 50%, #00f2fe 75%, #43e97b 100%);
   background-size: 400% 400%;
   animation: gradientShift 15s ease infinite;
 }
@@ -75,11 +75,11 @@ export default {
 }
 
 .modern-header {
-  // TRUE 3D HEADER
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  // TRUE 3D HEADER - BLUE THEME
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%) !important;
   box-shadow:
-    0 8px 32px rgba(102, 126, 234, 0.4),
-    0 4px 16px rgba(102, 126, 234, 0.3),
+    0 8px 32px rgba(30, 60, 114, 0.4),
+    0 4px 16px rgba(42, 82, 152, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
