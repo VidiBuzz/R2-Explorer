@@ -1,7 +1,7 @@
 <template>
-  <q-page class="">
-    <div class="q-pa-md">
-      <q-breadcrumbs>
+  <q-page class="modern-files-page">
+    <div class="q-pa-md modern-content">
+      <q-breadcrumbs class="modern-breadcrumbs">
         <q-breadcrumbs-el style="cursor: pointer" v-for="obj in breadcrumbs" :key="obj.name" :label="obj.name" @click="breadcrumbsClick(obj)" />
       </q-breadcrumbs>
 
@@ -16,8 +16,8 @@
           :hide-pagination="true"
           :rows-per-page-options="[0]"
           column-sort-order="da"
-          :flat="true"
-          table-class="file-list"
+          :flat="false"
+          table-class="modern-file-table"
           @row-dblclick="openRowClick"
           @row-click="openRowDlbClick"
         >
@@ -290,24 +290,97 @@ export default defineComponent({
 });
 </script>
 
-<style>
-.file-list table , .file-list tbody , .file-list thead {
+<style scoped lang="scss">
+.modern-files-page {
+  background: transparent;
+}
+
+.modern-content {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+.modern-breadcrumbs {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 12px;
+  font-weight: 600;
+
+  :deep(.q-breadcrumbs__el) {
+    color: #667eea;
+    transition: all 0.2s ease;
+
+    &:hover {
+      color: #764ba2;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.modern-file-table {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+
+  :deep(thead) {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+    tr {
+      th {
+        color: white;
+        font-weight: 700;
+        font-size: 0.95em;
+        letter-spacing: 0.5px;
+        padding: 16px;
+      }
+    }
+  }
+
+  :deep(tbody) {
+    tr {
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%);
+        transform: translateX(4px);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+      }
+
+      td {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+
+  :deep(.q-icon) {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  }
+}
+
+.modern-file-table table,
+.modern-file-table tbody,
+.modern-file-table thead {
   width: 100%;
   display: block;
 }
 
-
-.file-list td:first-of-type, .file-list th:first-of-type {
+.modern-file-table td:first-of-type,
+.modern-file-table th:first-of-type {
   overflow-x: hidden;
   white-space: nowrap;
   flex-grow: 1;
   text-overflow: ellipsis;
 }
 
-.file-list tr {
+.modern-file-table tr {
   display: flex;
   width: 100%;
   justify-content: center;
-
 }
 </style>

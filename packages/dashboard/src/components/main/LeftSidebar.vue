@@ -5,14 +5,6 @@
       <q-btn v-else color="green" icon="add" stack class="q-mb-lg" label="New">
         <q-menu>
           <q-list>
-            <q-item clickable v-close-popup @click="$refs.createFile.open()">
-              <q-item-section>
-                <q-item-label>
-                  <q-icon name="note_add" size="sm" />
-                  New File
-                </q-item-label>
-              </q-item-section>
-            </q-item>
             <q-item clickable v-close-popup @click="$refs.createFolder.open()">
               <q-item-section>
                 <q-item-label>
@@ -49,18 +41,16 @@
   </div>
 
   <create-folder ref="createFolder" />
-  <create-file ref="createFile" />
 </template>
 
 <script>
-import CreateFile from "components/files/CreateFile.vue";
 import CreateFolder from "components/files/CreateFolder.vue";
 import { useMainStore } from "stores/main-store";
 import { defineComponent } from "vue";
 
 export default defineComponent({
 	name: "LeftSidebar",
-	components: { CreateFolder, CreateFile },
+	components: { CreateFolder },
 	methods: {
 		gotoEmail: function () {
 			if (this.selectedApp !== "email") this.changeApp("email");
@@ -92,9 +82,44 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .q-btn {
   max-width: 100%;
-  padding: 4px;
+  padding: 12px;
+  border-radius: 16px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.q-menu {
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+
+  .q-list {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 12px;
+  }
+
+  .q-item {
+    border-radius: 8px;
+    margin: 4px 8px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      transform: translateX(4px);
+    }
+  }
 }
 </style>
