@@ -9,6 +9,7 @@ import { basicAuth } from "hono/basic-auth";
 import { cors } from "hono/cors";
 import { z } from "zod";
 import { readOnlyMiddleware } from "./foundation/middlewares/readonly";
+import { roleBasedMiddleware } from "./foundation/middlewares/admin";
 import { settings } from "./foundation/settings";
 import { CreateFolder } from "./modules/buckets/createFolder";
 import { DeleteObject } from "./modules/buckets/deleteObject";
@@ -113,6 +114,9 @@ export function R2Explorer(config?: R2ExplorerConfig) {
 			}),
 		);
 	}
+
+	// Role-based access control - Admin (vidiman) has full access, others are read-only
+	app.use("/api/*", roleBasedMiddleware);
 
 	openapi.get("/api/server/config", GetInfo);
 
