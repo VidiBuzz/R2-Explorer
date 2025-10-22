@@ -184,6 +184,12 @@ export const apiHandler = {
 			parts,
 		});
 	},
+	multipartAbort: (key, bucket, uploadId) => {
+		return api.post(`/buckets/${bucket}/multipart/abort`, {
+			key: encode(key),
+			uploadId,
+		});
+	},
 	multipartUpload: (uploadId, partNumber, bucket, key, chunk, callback, signal) => {
 		return api.post(`/buckets/${bucket}/multipart/upload`, chunk, {
 			params: {

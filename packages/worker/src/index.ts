@@ -16,6 +16,7 @@ import { GetObject } from "./modules/buckets/getObject";
 import { HeadObject } from "./modules/buckets/headObject";
 import { ListObjects } from "./modules/buckets/listObjects";
 import { MoveObject } from "./modules/buckets/moveObject";
+import { AbortUpload } from "./modules/buckets/multipart/abortUpload";
 import { CompleteUpload } from "./modules/buckets/multipart/completeUpload";
 import { CreateUpload } from "./modules/buckets/multipart/createUpload";
 import { PartUpload } from "./modules/buckets/multipart/partUpload";
@@ -122,6 +123,7 @@ export function R2Explorer(config?: R2ExplorerConfig) {
 	openapi.post("/api/buckets/:bucket/multipart/create", CreateUpload);
 	openapi.post("/api/buckets/:bucket/multipart/upload", PartUpload);
 	openapi.post("/api/buckets/:bucket/multipart/complete", CompleteUpload);
+	openapi.post("/api/buckets/:bucket/multipart/abort", AbortUpload);
 	openapi.post("/api/buckets/:bucket/delete", DeleteObject);
 	openapi.on("head", "/api/buckets/:bucket/:key", HeadObject);
 	openapi.get("/api/buckets/:bucket/:key/head", HeadObject); // There are some issues with calling the head method

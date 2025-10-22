@@ -26,6 +26,7 @@
 import { useQuasar } from "quasar";
 import { ROOT_FOLDER, apiHandler, decode, sleep } from "src/appUtils";
 import { useMainStore } from "stores/main-store";
+import { uploadResumeManager } from "src/utils/upload-resume-manager";
 
 export default {
 	data: () => ({
@@ -187,12 +188,38 @@ export default {
 					let uploadedBytes = 0;
 
 					if (file.size > chunkSize) {
-						const { uploadId } = (await apiHandler.multipartCreate(file, key, this.selectedBucket)).data;
-						let partNumber = 1;
-						const parts = [];
 						const totalParts = Math.ceil(file.size / chunkSize);
 
-						for (let start = 0; start < file.size; start += chunkSize) {
+						// Check for existing resume state
+						let uploadId;
+						let parts = [];
+						let startPartNumber = 1;
+
+						const canResume = uploadResumeManager.canResume(this.selectedBucket, key, file.size, chunkSize);
+
+						if (canResume) {
+							// Resume existing upload
+							const resumeState = uploadResumeManager.getUploadState(this.selectedBucket, key, file.size);
+							uploadId = resumeState.uploadId;
+							parts = resumeState.completedParts;
+							startPartNumber = uploadResumeManager.getNextPartNumber(this.selectedBucket, key, file.size);
+
+							// Calculate uploaded bytes from completed parts
+							uploadedBytes = (startPartNumber - 1) * chunkSize;
+
+							console.log(`Resuming upload for ${file.name} from part ${startPartNumber}/${totalParts}`);
+						} else {
+							// Create new multipart upload
+							const response = await apiHandler.multipartCreate(file, key, this.selectedBucket);
+							uploadId = response.data.uploadId;
+
+							// Start tracking this upload
+							uploadResumeManager.startUpload(this.selectedBucket, key, file.size, uploadId, chunkSize);
+						}
+
+						// Upload parts (skip already completed parts)
+						for (let partNumber = startPartNumber; partNumber <= totalParts; partNumber++) {
+							const start = (partNumber - 1) * chunkSize;
 							const end = Math.min(start + chunkSize, file.size);
 							const chunk = file.slice(start, end);
 
@@ -216,10 +243,17 @@ export default {
 								},
 								controller.signal
 							);
+
+							// Save this part to resume manager
+							uploadResumeManager.recordPart(this.selectedBucket, key, file.size, partNumber, data.etag);
 							parts.push(data);
-							partNumber += 1;
 						}
+
+						// Complete multipart upload
 						await apiHandler.multipartComplete(file, key, this.selectedBucket, parts, uploadId);
+
+						// Clear resume state after successful completion
+						uploadResumeManager.clearUpload(this.selectedBucket, key, file.size);
 					} else {
 						await apiHandler.uploadObjects(file, key, this.selectedBucket,
 							(progressEvent) => {
@@ -244,12 +278,28 @@ export default {
 					transfersStore.completeTransfer(file.webkitRelativePath || file.name);
 				} catch (e) {
 					if (e.name === 'AbortError' || e.name === 'CanceledError') {
+						// Check if this was a multipart upload that needs aborting
+						const resumeState = uploadResumeManager.getUploadState(this.selectedBucket, key, file.size);
+						if (resumeState && resumeState.uploadId) {
+							// Abort the multipart upload on the server
+							try {
+								await apiHandler.multipartAbort(key, this.selectedBucket, resumeState.uploadId);
+								console.log(`Aborted multipart upload for ${file.name}`);
+							} catch (abortError) {
+								console.error(`Failed to abort multipart upload: ${abortError.message}`);
+							}
+							// Clear resume state
+							uploadResumeManager.clearUpload(this.selectedBucket, key, file.size);
+						}
+
 						this.mainStore.removeUploadingFile(file.name);
 						// Transfer already removed by cancel button
 					} else {
 						console.error(`Unable to upload file ${file.name}: ${e.message}`);
 						// Mark transfer as failed
 						transfersStore.failTransfer(file.webkitRelativePath || file.name, e.message);
+
+						// Don't clear resume state on failure - allow resuming later
 					}
 				}
 			};
@@ -287,6 +337,10 @@ export default {
 				timeout: 5000, // we will timeout it in 5s
 			});
 
+			// Clean up old upload resume states (>7 days)
+			uploadResumeManager.cleanupOldUploads();
+
+			// Refresh file list to show newly uploaded files
 			this.$bus.emit("fetchFiles");
 		},
 		async traverseFileTree(item, path, folders, depth) {
