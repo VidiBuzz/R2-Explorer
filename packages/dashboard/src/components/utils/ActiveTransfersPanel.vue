@@ -292,7 +292,7 @@ export default defineComponent({
     };
 
     const formatSize = (bytes) => {
-      if (!bytes || bytes === 0) return '0 B';
+      if (!bytes || isNaN(bytes) || bytes === 0) return '0 B';
       const k = 1024;
       const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -300,7 +300,7 @@ export default defineComponent({
     };
 
     const formatSpeed = (bytesPerSecond) => {
-      if (!bytesPerSecond || bytesPerSecond === 0) return '0 KB/s';
+      if (!bytesPerSecond || isNaN(bytesPerSecond) || bytesPerSecond === 0) return '0 KB/s';
       return formatSize(bytesPerSecond) + '/s';
     };
 
@@ -389,7 +389,7 @@ export default defineComponent({
   bottom: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 9999;
   pointer-events: none;
 
   > * {

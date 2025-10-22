@@ -36,11 +36,21 @@ export class GetObject extends OpenAPIRoute {
 
 		let filePath;
 		try {
+			// First try: assume it's base64 encoded
 			filePath = decodeURIComponent(escape(atob(data.params.key)));
 		} catch (e) {
-			filePath = decodeURIComponent(
-				escape(atob(decodeURIComponent(data.params.key))),
-			);
+			try {
+				// Second try: maybe it's double-encoded (URL then base64)
+				filePath = decodeURIComponent(escape(atob(decodeURIComponent(data.params.key))));
+			} catch (e2) {
+				// Third try: just URL decode it
+				try {
+					filePath = decodeURIComponent(data.params.key);
+				} catch (e3) {
+					// Last resort: use raw key
+					filePath = data.params.key;
+				}
+			}
 		}
 
 		const object = await bucket.get(filePath);
