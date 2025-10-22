@@ -136,6 +136,19 @@ export default {
 			this.$bus.emit("fetchFiles");
 			this.mainStore.addUploadingFiles(allFiles);
 
+			// Track uploads in transfers panel
+			const { useTransfersStore } = await import('stores/transfers-store');
+			const transfersStore = useTransfersStore();
+			for (const file of allFiles) {
+				transfersStore.addTransfer({
+					id: file.webkitRelativePath || file.name,
+					filename: file.name,
+					type: 'upload',
+					fileSize: file.size,
+					progress: 0
+				});
+			}
+
 			const notif = this.q.notify({
 				group: false,
 				spinner: true,
@@ -187,11 +200,17 @@ export default {
 								uploadId, partNumber, this.selectedBucket, key, chunk,
 								(progressEvent) => {
 									uploadedBytes = start + progressEvent.loaded;
+									const progress = (uploadedBytes * 100) / file.size;
 									this.mainStore.setUploadProgress({
 										filename: file.name,
-										progress: (uploadedBytes * 100) / file.size,
+										progress: progress,
 										partNumber: partNumber,
 										totalParts: totalParts,
+										uploadedBytes: uploadedBytes
+									});
+									// Update transfers panel
+									transfersStore.updateTransfer(file.webkitRelativePath || file.name, {
+										progress: progress,
 										uploadedBytes: uploadedBytes
 									});
 								},
@@ -205,9 +224,15 @@ export default {
 						await apiHandler.uploadObjects(file, key, this.selectedBucket,
 							(progressEvent) => {
 								uploadedBytes = progressEvent.loaded;
+								const progress = (uploadedBytes * 100) / file.size;
 								this.mainStore.setUploadProgress({
 									filename: file.name,
-									progress: (uploadedBytes * 100) / file.size,
+									progress: progress,
+									uploadedBytes: uploadedBytes
+								});
+								// Update transfers panel
+								transfersStore.updateTransfer(file.webkitRelativePath || file.name, {
+									progress: progress,
 									uploadedBytes: uploadedBytes
 								});
 							},
@@ -215,11 +240,16 @@ export default {
 						);
 					}
 					this.mainStore.completeUpload(file.name);
+					// Mark transfer as complete
+					transfersStore.completeTransfer(file.webkitRelativePath || file.name);
 				} catch (e) {
 					if (e.name === 'AbortError' || e.name === 'CanceledError') {
 						this.mainStore.removeUploadingFile(file.name);
+						// Transfer already removed by cancel button
 					} else {
 						console.error(`Unable to upload file ${file.name}: ${e.message}`);
+						// Mark transfer as failed
+						transfersStore.failTransfer(file.webkitRelativePath || file.name, e.message);
 					}
 				}
 			};

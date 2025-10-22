@@ -1,7 +1,24 @@
-name = "r2-explorer"
+name = "smartchannel"
 compatibility_date = "2024-11-06"
 main = "packages/worker/worker.ts"
-assets = { directory = "packages/worker/dashboard", binding = "ASSETS", html_handling = "auto-trailing-slash", not_found_handling = "single-page-application" }
+
+# R2 Explorer Dashboard Assets
+# NOTE: Assets are served AFTER authentication check in worker code
+# html_handling and not_found_handling disabled to prevent auto-serving before auth
+[assets]
+directory = "packages/worker/dashboard"
+binding = "ASSETS"
+html_handling = "none"
+not_found_handling = "none"
+
+# Keycloak OIDC Configuration - v4.0
+# Custom domain ONLY: media.candidstudios.net (workers.dev disabled)
+[vars]
+KEYCLOAK_URL = "https://keycloak-production-4dfd.up.railway.app"
+KEYCLOAK_REALM = "CandidStudios"
+KEYCLOAK_CLIENT_ID = "smartchannel"
+KEYCLOAK_REDIRECT_URI = "https://media.candidstudios.net/callback"
+SESSION_SECRET = "fiyLGXyYe4GZX57T0d3BbWT7lEFGg8sYxUCMaLxav+Y="
 
 [[r2_buckets]]
 binding = "scx"

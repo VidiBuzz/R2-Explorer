@@ -23,6 +23,7 @@
 
   <uploadingPopup />
   <downloadingPopup />
+  <ActiveTransfersPanel />
 
   </q-layout>
 </template>
@@ -30,6 +31,7 @@
 <script>
 import uploadingPopup from "components/utils/uploadingPopup.vue";
 import downloadingPopup from "components/utils/downloadingPopup.vue";
+import ActiveTransfersPanel from "components/utils/ActiveTransfersPanel.vue";
 import LeftSidebar from "components/main/LeftSidebar.vue";
 import RightSidebar from "components/main/RightSidebar.vue";
 import TopBar from "components/main/Topbar.vue";
@@ -37,7 +39,7 @@ import { ref } from "vue";
 
 export default {
 	name: "MainLayout",
-	components: { TopBar, RightSidebar, LeftSidebar, uploadingPopup, downloadingPopup },
+	components: { TopBar, RightSidebar, LeftSidebar, uploadingPopup, downloadingPopup, ActiveTransfersPanel },
 	setup() {
 		const leftDrawerOpen = ref(false);
 		const rightDrawerOpen = ref(false);

@@ -194,11 +194,47 @@
 
           <template v-slot:body-cell-options="prop">
             <td class="text-right">
-              <q-btn round flat icon="more_vert" size="sm">
-                <q-menu>
-                  <FileContextMenu :prop="prop" @openObject="openObject" @deleteObject="$refs.options.deleteObject" @renameObject="$refs.options.renameObject" @updateMetadataObject="$refs.options.updateMetadataObject" />
-                </q-menu>
-              </q-btn>
+              <div class="action-buttons">
+                <q-btn
+                  round
+                  flat
+                  dense
+                  icon="download"
+                  size="sm"
+                  color="blue"
+                  @click.stop="downloadFile(prop.row)"
+                >
+                  <q-tooltip>Download</q-tooltip>
+                </q-btn>
+
+                <q-btn
+                  round
+                  flat
+                  dense
+                  icon="share"
+                  size="sm"
+                  color="purple"
+                  @click.stop="shareFile(prop.row)"
+                >
+                  <q-tooltip>Share</q-tooltip>
+                </q-btn>
+
+                <q-btn
+                  round
+                  flat
+                  dense
+                  icon="delete"
+                  size="sm"
+                  color="red"
+                  @click.stop="$refs.options.deleteObject(prop.row)"
+                >
+                  <q-tooltip>Delete</q-tooltip>
+                </q-btn>
+              </div>
+
+              <q-menu touch-position context-menu>
+                <FileContextMenu :prop="prop" @openObject="openObject" @deleteObject="$refs.options.deleteObject" @renameObject="$refs.options.renameObject" @updateMetadataObject="$refs.options.updateMetadataObject" />
+              </q-menu>
             </td>
           </template>
         </q-table>
@@ -219,6 +255,11 @@
             <span class="status-item">
               <q-icon name="insert_drive_file" size="xs" />
               {{ totalFiles }} file(s)
+            </span>
+            <q-separator v-if="activeTransfersCount > 0" vertical inset />
+            <span v-if="activeTransfersCount > 0" class="status-item active-transfers" @click="openActiveTransfers">
+              <q-icon name="swap_vert" size="xs" />
+              {{ activeTransfersCount }} active transfer(s)
             </span>
           </div>
           <div class="status-right">
@@ -245,6 +286,7 @@ import DragAndDrop from "components/utils/DragAndDrop.vue";
 import FileContextMenu from "pages/files/FileContextMenu.vue";
 import { useQuasar } from "quasar";
 import { useMainStore } from "stores/main-store";
+import { useTransfersStore } from "stores/transfers-store";
 import { defineComponent } from "vue";
 import { ROOT_FOLDER, apiHandler, decode, encode } from "../../appUtils";
 
@@ -381,6 +423,10 @@ export default defineComponent({
 				.filter(r => r.type !== 'folder')
 				.reduce((sum, file) => sum + (file.sizeRaw || 0), 0);
 			return this.formatBytes(bytes);
+		},
+		activeTransfersCount: function () {
+			// Get real count from transfers store
+			return this.transfersStore.activeTransfersCount;
 		},
 	},
 	watch: {
@@ -530,6 +576,32 @@ export default defineComponent({
 				timeout: 2000
 			});
 		},
+		downloadFile: function (row) {
+			if (row.type !== 'folder') {
+				window.open(`${this.mainStore.serverUrl}/api/buckets/${this.selectedBucket}/${row.key}`, '_blank');
+				this.q.notify({
+					type: 'positive',
+					message: `Downloading ${row.name}`,
+					timeout: 2000
+				});
+			}
+		},
+		shareFile: function (row) {
+			this.q.notify({
+				type: 'info',
+				message: 'Share functionality coming soon',
+				timeout: 2000
+			});
+		},
+		openActiveTransfers: function () {
+			this.q.notify({
+				type: 'info',
+				message: 'Opening Active Transfers panel...',
+				timeout: 2000
+			});
+			// TODO: Emit event to open the Active Transfers panel
+			this.$bus.emit('openActiveTransfers');
+		},
 		formatBytes: function (bytes) {
 			if (bytes === 0) return '0 Bytes';
 			const k = 1024;
@@ -576,6 +648,7 @@ export default defineComponent({
 	setup() {
 		return {
 			mainStore: useMainStore(),
+			transfersStore: useTransfersStore(),
 			q: useQuasar(),
 		};
 	},
@@ -845,16 +918,16 @@ export default defineComponent({
   backdrop-filter: blur(10px);
 
   :deep(thead) {
-    background: #808080;
-    border: 1px solid #707070;
-    border-bottom: 3px solid #505050;
+    background: #667eea;
+    border: 1px solid #5568d3;
+    border-bottom: 3px solid #4c51bf;
 
     tr {
       height: 60px;
 
       th {
-        background: #808080 !important;
-        color: #1a1a1a;
+        background: #667eea !important;
+        color: #ffffff;
         font-weight: 800;
         font-size: 0.95em;
         letter-spacing: 0.5px;
@@ -898,9 +971,9 @@ export default defineComponent({
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       background: rgba(255, 255, 255, 1);
 
-      // Zebra stripes - every other row 10% darker
+      // Zebra stripes - every other row with light gray
       &:nth-child(even) {
-        background: rgba(0, 0, 0, 0.1);
+        background: #f5f5f5 !important;
       }
 
       &:hover {
@@ -978,7 +1051,7 @@ export default defineComponent({
 
 .modern-file-table thead {
   display: table-header-group;
-  background: #808080 !important;
+  background: #667eea !important;
 }
 
 .modern-file-table tbody {
@@ -995,7 +1068,7 @@ export default defineComponent({
 }
 
 .modern-file-table th {
-  background: #808080 !important;
+  background: #667eea !important;
 }
 
 .modern-file-table td:first-of-type,
@@ -1073,6 +1146,8 @@ export default defineComponent({
 
 // STATUS BAR (Windows Explorer Style)
 .status-bar {
+  position: relative;
+  z-index: 500;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1118,6 +1193,30 @@ export default defineComponent({
       font-weight: 600;
       color: #2a5298;
     }
+
+    &.active-transfers {
+      font-weight: 600;
+      color: #1e3c72;
+      background: linear-gradient(135deg, rgba(30, 60, 114, 0.15) 0%, rgba(42, 82, 152, 0.1) 100%);
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+
+      .q-icon {
+        color: #1e3c72;
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, rgba(30, 60, 114, 0.25) 0%, rgba(42, 82, 152, 0.2) 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(30, 60, 114, 0.2);
+      }
+
+      &:active {
+        transform: translateY(0px);
+      }
+    }
   }
 
   :deep(.q-separator) {
@@ -1125,4 +1224,23 @@ export default defineComponent({
     background: rgba(30, 60, 114, 0.2);
   }
 }
+
+// ACTION BUTTONS IN TABLE
+.action-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+
+  :deep(.q-btn) {
+    transition: all 0.2s ease;
+
+    &:hover {
+      transform: scale(1.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+/* Cache bust v3.5 - Square buttons, status badges, improved transfer panel UI */
 </style>

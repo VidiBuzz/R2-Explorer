@@ -70,3 +70,17 @@ $lg-breakpoint: 1920px;
     max-width: 1440px;
   }
 }
+
+// Global q-table header styling - Purple theme
+.q-table thead tr,
+.q-table thead th {
+  background-color: #667eea !important;
+  color: #ffffff !important;
+}
+
+.q-table thead {
+  border: 1px solid #5568d3 !important;
+  border-bottom: 3px solid #4c51bf !important;
+}
+
+/* Global purple table theme v3.2 - FORCE CACHE BUST */

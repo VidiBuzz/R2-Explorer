@@ -22,7 +22,7 @@
 </template>
 <script>
 import { useQuasar } from "quasar";
-import { ROOT_FOLDER, decode, encode } from "src/appUtils";
+import { ROOT_FOLDER, decode, encode, apiHandler } from "src/appUtils";
 import { useMainStore } from "stores/main-store";
 
 export default {
@@ -46,16 +46,31 @@ export default {
 	},
 	methods: {
 		renameObject: function () {
-			this.$emit("renameObject", this.prop.row);
+			this.q.notify({
+				message: "Rename requires admin approval",
+				timeout: 3000,
+				type: "warning",
+				icon: "lock"
+			});
 		},
 		updateMetadataObject: function () {
-			this.$emit("updateMetadataObject", this.prop.row);
+			this.q.notify({
+				message: "Update metadata requires admin approval",
+				timeout: 3000,
+				type: "warning",
+				icon: "lock"
+			});
 		},
 		openObject: function () {
 			this.$emit("openObject", this.prop.row);
 		},
 		deleteObject: function () {
-			this.$emit("deleteObject", this.prop.row);
+			this.q.notify({
+				message: "Delete requires admin approval",
+				timeout: 3000,
+				type: "warning",
+				icon: "lock"
+			});
 		},
 		shareObject: async function () {
 			let url;
@@ -99,15 +114,59 @@ export default {
 				});
 			}
 		},
-		downloadObject: function () {
-			const link = document.createElement("a");
-			link.download = this.prop.row.name;
+		downloadObject: async function () {
+			const filename = this.prop.row.name;
+			const fileSize = this.prop.row.size || 0;
+			const fileKey = this.prop.row.key;
 
-			link.href = `${this.mainStore.serverUrl}/api/buckets/${this.selectedBucket}/${encode(this.prop.row.key)}`;
+			// Add to downloading tracking
+			this.mainStore.addDownloadingFile(filename, fileSize);
 
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
+			// Create AbortController
+			const controller = new AbortController();
+			this.mainStore.setDownloadController(filename, controller);
+
+			try {
+				// Use apiHandler.downloadFile with progress callback
+				const response = await apiHandler.downloadFile(
+					this.selectedBucket,
+					fileKey,
+					{ downloadType: "blob" },
+					(progressEvent) => {
+						const progress = (progressEvent.loaded * 100) / (progressEvent.total || fileSize);
+						this.mainStore.setDownloadProgress({
+							filename: filename,
+							progress: progress
+						});
+					},
+					controller
+				);
+
+				// Create download link from response
+				const blob = new Blob([response.data]);
+				const url = window.URL.createObjectURL(blob);
+				const link = document.createElement("a");
+				link.href = url;
+				link.download = filename;
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+				window.URL.revokeObjectURL(url);
+
+				this.mainStore.completeDownload(filename);
+			} catch (e) {
+				if (e.name === 'AbortError' || e.name === 'CanceledError') {
+					this.mainStore.removeDownloadingFile(filename);
+					return;
+				}
+				console.error(`Download failed for ${filename}:`, e);
+				this.mainStore.removeDownloadingFile(filename);
+				this.q.notify({
+					message: `Download failed: ${e.message}`,
+					timeout: 5000,
+					type: "negative",
+				});
+			}
 		},
 	},
 	setup() {

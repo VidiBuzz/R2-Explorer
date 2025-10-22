@@ -5,9 +5,29 @@
     <q-avatar>
       <img src="/logo-white.svg">
     </q-avatar>
-    <span class="title-lato">Candid Cloud</span> <span class="title-kumbh">SmartChannel</span>
+    <span class="title-lato">R2</span> <span class="title-kumbh">SmartChannel</span>
   </q-toolbar-title>
   <q-space />
+
+  <!-- Search Bar -->
+  <q-input
+    v-model="searchQuery"
+    dense
+    standout
+    placeholder="Search files..."
+    class="topbar-search"
+    style="width: 300px; max-width: 300px;"
+  >
+    <template v-slot:prepend>
+      <q-icon name="search" />
+    </template>
+    <template v-slot:append v-if="searchQuery">
+      <q-icon name="close" @click="searchQuery = ''" class="cursor-pointer" />
+    </template>
+  </q-input>
+
+  <q-space />
+
   <div v-if="mainStore.buckets.length > 1">
     <bucket-picker/>
   </div>
@@ -29,8 +49,8 @@
           <q-avatar size="80px">
             <img src="/logo-white.svg">
           </q-avatar>
-          <h5 class="q-mt-md q-mb-xs"><span class="title-lato">Candid Cloud</span> <span class="title-kumbh">SmartChannel</span></h5>
-          <p class="text-grey-7 q-mb-none">Version 2.24</p>
+          <h5 class="q-mt-md q-mb-xs"><span class="title-lato">R2</span> <span class="title-kumbh">SmartChannel</span></h5>
+          <p class="text-grey-7 q-mb-none">Version 4.1 with Keycloak SSO</p>
         </div>
       </q-card-section>
 
@@ -57,6 +77,16 @@
             <li>Shift+click range selection</li>
             <li>Bulk file operations (Delete/Move/Download)</li>
           </ul>
+
+          <p class="text-weight-medium q-mt-md q-mb-xs">v4.0 KEYCLOAK SSO RELEASE:</p>
+          <ul class="q-pl-md text-caption">
+            <li>✅ Keycloak OIDC authentication for 32 users</li>
+            <li>✅ Individual user accounts with SSO</li>
+            <li>✅ Encrypted session management</li>
+            <li>✅ Real upload tracking in Active Transfers panel</li>
+            <li>✅ Individual pause/resume/cancel for each transfer</li>
+            <li>✅ Real-time speed, progress, and ETA display</li>
+          </ul>
         </div>
       </q-card-section>
     </q-card>
@@ -75,7 +105,8 @@ export default defineComponent({
 	setup() {
 		const mainStore = useMainStore();
 		const showAbout = ref(false);
-		return { mainStore, showAbout };
+		const searchQuery = ref('');
+		return { mainStore, showAbout, searchQuery };
 	},
 });
 </script>

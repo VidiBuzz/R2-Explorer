@@ -197,5 +197,22 @@ export const useMainStore = defineStore("main", {
 		clearDownloadingFiles() {
 			this.downloadingFiles = {};
 		},
+		setDownloadController(filename, controller) {
+			this.downloadControllers[filename] = controller;
+		},
+		cancelDownload(filename) {
+			if (this.downloadControllers[filename]) {
+				this.downloadControllers[filename].abort();
+				delete this.downloadControllers[filename];
+			}
+			this.removeDownloadingFile(filename);
+		},
+		cancelAllDownloads() {
+			Object.keys(this.downloadingFiles).forEach(filename => {
+				if (this.downloadingFiles[filename].progress < 100) {
+					this.cancelDownload(filename);
+				}
+			});
+		},
 	},
 });
