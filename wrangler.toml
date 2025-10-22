@@ -14,7 +14,7 @@ not_found_handling = "none"
 # Keycloak OIDC Configuration - v4.0
 # Custom domain ONLY: media.candidstudios.net (workers.dev disabled)
 [vars]
-KEYCLOAK_URL = "https://keycloak-production-4dfd.up.railway.app"
+KEYCLOAK_URL = "https://login.candidstudios.net"
 KEYCLOAK_REALM = "CandidStudios"
 KEYCLOAK_CLIENT_ID = "smartchannel"
 KEYCLOAK_REDIRECT_URI = "https://media.candidstudios.net/callback"
