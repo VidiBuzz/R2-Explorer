@@ -24,7 +24,7 @@ export async function dashboardRedirect(c: AppContext, next) {
 	const url = new URL(c.req.url);
 
 	if (!url.pathname.includes(".")) {
-		return c.env.ASSETS.fetch(new Request(url.origin));
+		return c.env.ASSETS.fetch(new Request(url.origin + "/index.html"));
 	}
 
 	await next();
