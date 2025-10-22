@@ -50,7 +50,7 @@
             <img src="/logo-white.svg">
           </q-avatar>
           <h5 class="q-mt-md q-mb-xs"><span class="title-lato">R2</span> <span class="title-kumbh">SmartChannel</span></h5>
-          <p class="text-grey-7 q-mb-none">Version 4.4.1 - File Search</p>
+          <p class="text-grey-7 q-mb-none">Version 4.5 - Admin Delete/Move Protection</p>
         </div>
       </q-card-section>
 
@@ -60,13 +60,13 @@
 
           <p class="text-weight-medium q-mt-md q-mb-xs">✅ All Features:</p>
           <ul class="q-pl-md text-caption">
-            <li>✅ Real-time file search (NEW in v4.4)</li>
+            <li>✅ Admin-only delete/move protection - All users can upload (NEW in v4.5)</li>
+            <li>✅ Real-time file search (v4.4)</li>
             <li>✅ Upload resume after crashes (v4.3)</li>
             <li>✅ File list auto-refresh (v4.3)</li>
             <li>✅ Multipart upload abort (v4.3)</li>
             <li>✅ Download progress tracking with cancel (v4.2)</li>
             <li>✅ Upload progress tracking with cancel (v4.2)</li>
-            <li>✅ Admin permission controls (v4.2)</li>
             <li>✅ Keycloak OIDC + Google SSO authentication (v4.1)</li>
             <li>✅ 4 R2 buckets accessible (scx, candid-studios, candidclients, vidir2)</li>
           </ul>

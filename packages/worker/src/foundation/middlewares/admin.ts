@@ -1,9 +1,9 @@
 /**
  * Role-Based Access Control Middleware
  * 
- * Roles:
- * - Admin: vidiman (full access - read, write, delete)
- * - User: all other authenticated users (read-only)
+ * Permissions:
+ * - Admin (vidiman): Full access - upload, delete, move
+ * - All users: Can upload and view - cannot delete or move
  */
 
 import type { AppContext } from "../../types";
@@ -24,31 +24,30 @@ export function isAdminUser(context: AppContext): boolean {
 }
 
 /**
- * Role-based readonly middleware
- * Allows all operations for admin, blocks write operations for regular users
+ * Role-based access control middleware
+ * - All users: Can upload, view, download
+ * - Admin only: Can delete and move files
  */
 export async function roleBasedMiddleware(c: AppContext, next: () => Promise<void>) {
-  // Check if this is a write operation (POST, PUT, DELETE)
-  const method = c.req.method.toUpperCase();
-  const isWriteOperation = ['POST', 'PUT', 'DELETE'].includes(method);
+  const path = c.req.path;
   
-  // If it's a read operation (GET, HEAD), allow for all users
-  if (!isWriteOperation) {
-    await next();
-    return;
+  // Check if this is a delete or move operation
+  const isDeleteOperation = path.includes('/delete');
+  const isMoveOperation = path.includes('/move');
+  
+  // If it's delete or move, check if user is admin
+  if (isDeleteOperation || isMoveOperation) {
+    if (!isAdminUser(c)) {
+      return c.json(
+        { 
+          success: false, 
+          error: 'Permission denied. Only admin users can delete or move files.' 
+        }, 
+        403
+      );
+    }
   }
   
-  // For write operations, check if user is admin
-  if (!isAdminUser(c)) {
-    return c.json(
-      { 
-        success: false, 
-        error: 'Permission denied. Only admin users can modify or delete files.' 
-      }, 
-      403
-    );
-  }
-  
-  // User is admin, allow the operation
+  // All other operations (upload, view, download) are allowed for all authenticated users
   await next();
 }
