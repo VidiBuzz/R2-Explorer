@@ -11,7 +11,7 @@
 
   <!-- Search Bar -->
   <q-input
-    v-model="searchQuery"
+    v-model="mainStore.searchQuery"
     dense
     standout
     placeholder="Search files..."
@@ -21,8 +21,8 @@
     <template v-slot:prepend>
       <q-icon name="search" />
     </template>
-    <template v-slot:append v-if="searchQuery">
-      <q-icon name="close" @click="searchQuery = ''" class="cursor-pointer" />
+    <template v-slot:append v-if="mainStore.searchQuery">
+      <q-icon name="close" @click="mainStore.searchQuery = ''" class="cursor-pointer" />
     </template>
   </q-input>
 
@@ -50,7 +50,7 @@
             <img src="/logo-white.svg">
           </q-avatar>
           <h5 class="q-mt-md q-mb-xs"><span class="title-lato">R2</span> <span class="title-kumbh">SmartChannel</span></h5>
-          <p class="text-grey-7 q-mb-none">Version 4.3 - Upload Resume & Auto-Refresh</p>
+          <p class="text-grey-7 q-mb-none">Version 4.4.1 - File Search</p>
         </div>
       </q-card-section>
 
@@ -60,9 +60,10 @@
 
           <p class="text-weight-medium q-mt-md q-mb-xs">✅ All Features:</p>
           <ul class="q-pl-md text-caption">
-            <li>✅ Upload resume after crashes (NEW in v4.3)</li>
-            <li>✅ File list auto-refresh (NEW in v4.3)</li>
-            <li>✅ Multipart upload abort (NEW in v4.3)</li>
+            <li>✅ Real-time file search (NEW in v4.4)</li>
+            <li>✅ Upload resume after crashes (v4.3)</li>
+            <li>✅ File list auto-refresh (v4.3)</li>
+            <li>✅ Multipart upload abort (v4.3)</li>
             <li>✅ Download progress tracking with cancel (v4.2)</li>
             <li>✅ Upload progress tracking with cancel (v4.2)</li>
             <li>✅ Admin permission controls (v4.2)</li>
@@ -95,8 +96,7 @@ export default defineComponent({
 	setup() {
 		const mainStore = useMainStore();
 		const showAbout = ref(false);
-		const searchQuery = ref('');
-		return { mainStore, showAbout, searchQuery };
+		return { mainStore, showAbout };
 	},
 });
 </script>

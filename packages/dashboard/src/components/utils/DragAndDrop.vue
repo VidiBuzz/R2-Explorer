@@ -337,6 +337,9 @@ export default {
 				timeout: 5000, // we will timeout it in 5s
 			});
 
+			// Refresh file list to show newly uploaded files
+			this.$bus.emit('fetchFiles');
+
 			// Clean up old upload resume states (>7 days)
 			uploadResumeManager.cleanupOldUploads();
 

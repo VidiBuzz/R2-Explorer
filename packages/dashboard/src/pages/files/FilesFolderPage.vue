@@ -69,9 +69,10 @@
             <q-spinner color="primary" size="xl" />
           </div>
 
-          <div v-else-if="rows.length === 0" class="grid-empty">
+          <div v-else-if="filteredRows.length === 0" class="grid-empty">
             <q-icon name="folder" color="orange" size="80px" />
-            <p>This folder is empty</p>
+            <p v-if="mainStore.searchQuery">No files match your search</p>
+            <p v-else>This folder is empty</p>
           </div>
 
           <div v-else class="grid-container">
@@ -114,7 +115,7 @@
           </div>
 
           <!-- GRID PAGINATION -->
-          <div v-if="rows.length > gridItemsPerPage" class="grid-pagination">
+          <div v-if="filteredRows.length > gridItemsPerPage" class="grid-pagination">
             <q-btn
               flat
               round
@@ -124,7 +125,7 @@
               @click="gridPage--"
             />
             <span class="pagination-info">
-              Page {{ gridPage }} of {{ gridMaxPage }} ({{ rows.length }} total files)
+              Page {{ gridPage }} of {{ gridMaxPage }} ({{ filteredRows.length }} total files)
             </span>
             <q-btn
               flat
@@ -141,7 +142,7 @@
         <q-table
           v-else
           ref="table"
-          :rows="rows"
+          :rows="filteredRows"
           :columns="columns"
           row-key="name"
           :loading="loading"
@@ -357,6 +358,15 @@ export default defineComponent({
 		],
 	}),
 	computed: {
+		filteredRows: function () {
+			const query = this.mainStore.searchQuery.toLowerCase().trim();
+			if (!query) {
+				return this.rows;
+			}
+			return this.rows.filter(row =>
+				row.name.toLowerCase().includes(query)
+			);
+		},
 		selectedBucket: function () {
 			return this.$route.params.bucket;
 		},
@@ -400,19 +410,19 @@ export default defineComponent({
 		paginatedRows: function () {
 			const start = (this.gridPage - 1) * this.gridItemsPerPage;
 			const end = start + this.gridItemsPerPage;
-			return this.rows.slice(start, end);
+			return this.filteredRows.slice(start, end);
 		},
 		gridMaxPage: function () {
-			return Math.ceil(this.rows.length / this.gridItemsPerPage);
+			return Math.ceil(this.filteredRows.length / this.gridItemsPerPage);
 		},
 		totalFiles: function () {
-			return this.rows.filter(r => r.type !== 'folder').length;
+			return this.filteredRows.filter(r => r.type !== 'folder').length;
 		},
 		totalFolders: function () {
-			return this.rows.filter(r => r.type === 'folder').length;
+			return this.filteredRows.filter(r => r.type === 'folder').length;
 		},
 		totalSize: function () {
-			const bytes = this.rows
+			const bytes = this.filteredRows
 				.filter(r => r.type !== 'folder')
 				.reduce((sum, file) => sum + (file.sizeRaw || 0), 0);
 			return this.formatBytes(bytes);

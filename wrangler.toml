@@ -2,6 +2,11 @@ name = "smartchannel"
 compatibility_date = "2024-11-06"
 main = "packages/worker/worker.ts"
 
+# Route configuration - use CNAME to smartchannel.candidstudios.workers.dev
+[[routes]]
+pattern = "media.candidstudios.net/*"
+zone_name = "candidstudios.net"
+
 # R2 Explorer Dashboard Assets
 # NOTE: Assets are served AFTER authentication check in worker code
 # html_handling and not_found_handling disabled to prevent auto-serving before auth

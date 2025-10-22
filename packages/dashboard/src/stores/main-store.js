@@ -12,6 +12,7 @@ export const useMainStore = defineStore("main", {
 
 		// Frontend data
 		buckets: [],
+		searchQuery: "",
 
 		// Upload tracking
 		uploadingFiles: {},
