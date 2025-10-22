@@ -15,7 +15,7 @@ not_found_handling = "none"
 # Custom domain ONLY: media.candidstudios.net (workers.dev disabled)
 [vars]
 KEYCLOAK_URL = "https://login.candidstudios.net"
-KEYCLOAK_REALM = "CandidStudios"
+KEYCLOAK_REALM = "cc"
 KEYCLOAK_CLIENT_ID = "smartchannel"
 KEYCLOAK_REDIRECT_URI = "https://media.candidstudios.net/callback"
 SESSION_SECRET = "fiyLGXyYe4GZX57T0d3BbWT7lEFGg8sYxUCMaLxav+Y="
