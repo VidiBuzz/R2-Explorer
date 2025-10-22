@@ -50,42 +50,32 @@
             <img src="/logo-white.svg">
           </q-avatar>
           <h5 class="q-mt-md q-mb-xs"><span class="title-lato">R2</span> <span class="title-kumbh">SmartChannel</span></h5>
-          <p class="text-grey-7 q-mb-none">Version 4.1 with Keycloak SSO</p>
+          <p class="text-grey-7 q-mb-none">Version 4.3 - Upload Resume & Auto-Refresh</p>
         </div>
       </q-card-section>
 
       <q-card-section class="q-pt-none">
         <div class="text-caption text-grey-7">
-          <p>A powerful cloud storage management interface.</p>
+          <p>A powerful cloud storage management interface for Candid Studios.</p>
+
+          <p class="text-weight-medium q-mt-md q-mb-xs">✅ All Features:</p>
+          <ul class="q-pl-md text-caption">
+            <li>✅ Upload resume after crashes (NEW in v4.3)</li>
+            <li>✅ File list auto-refresh (NEW in v4.3)</li>
+            <li>✅ Multipart upload abort (NEW in v4.3)</li>
+            <li>✅ Download progress tracking with cancel (v4.2)</li>
+            <li>✅ Upload progress tracking with cancel (v4.2)</li>
+            <li>✅ Admin permission controls (v4.2)</li>
+            <li>✅ Keycloak OIDC + Google SSO authentication (v4.1)</li>
+            <li>✅ 4 R2 buckets accessible (scx, candid-studios, candidclients, vidir2)</li>
+          </ul>
 
           <p class="text-weight-medium q-mt-md q-mb-xs">Built with:</p>
           <ul class="q-pl-md q-mb-md">
-            <li>Vue.js 3.4</li>
-            <li>Quasar 2.18.5</li>
-            <li>Vite 2.9.18</li>
-            <li>Pinia (State Management)</li>
+            <li>Vue.js 3.4 + Quasar 2.18.5</li>
             <li>Cloudflare Workers + R2</li>
-          </ul>
-
-          <p class="text-weight-medium q-mb-xs">Features:</p>
-          <ul class="q-pl-md">
-            <li>Parallel uploads (4 concurrent files)</li>
-            <li>Real-time speed and time tracking</li>
-            <li>Upload cancellation</li>
-            <li>Multipart upload support (95MB chunks)</li>
-            <li>Drag-and-drop file management</li>
-            <li>Shift+click range selection</li>
-            <li>Bulk file operations (Delete/Move/Download)</li>
-          </ul>
-
-          <p class="text-weight-medium q-mt-md q-mb-xs">v4.0 KEYCLOAK SSO RELEASE:</p>
-          <ul class="q-pl-md text-caption">
-            <li>✅ Keycloak OIDC authentication for 32 users</li>
-            <li>✅ Individual user accounts with SSO</li>
-            <li>✅ Encrypted session management</li>
-            <li>✅ Real upload tracking in Active Transfers panel</li>
-            <li>✅ Individual pause/resume/cancel for each transfer</li>
-            <li>✅ Real-time speed, progress, and ETA display</li>
+            <li>Keycloak 26.0.7 (Railway)</li>
+            <li>Pinia State Management</li>
           </ul>
         </div>
       </q-card-section>
